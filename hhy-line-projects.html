@@ -1,0 +1,530 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>ECharts 互动微课（真实基建拟真版）</title>
+  <style>
+    html, body { height: 100%; margin: 0; padding: 0; background: #0E2152; overflow: hidden; font-family: -apple-system, "Microsoft YaHei", sans-serif; }
+    .content { height: 100%; position: relative; }
+
+    .chart-wrapper { position: relative; width: 1200px; height: 720px; margin: 0 auto; top: 50%; transform: translateY(-50%); }
+    #charts { width: 100%; height: 100%; }
+
+    .tag {
+      position: absolute; top: 40%; font-size: 72px; font-weight: 900; letter-spacing: 10px;
+      color: rgba(255,255,255,0.1); opacity: 0; pointer-events: none; transition: opacity 0.8s;
+    }
+    .tag.left { left: 50%; margin-left: -530px; }
+    .tag.right { right: 50%; margin-right: -530px; }
+
+    /* UI 状态栏 - 更沉稳 */
+    .status-bar {
+      position: absolute; left: 24px; bottom: 24px; color: #fff; background: rgba(10, 20, 40, 0.85);
+      padding: 18px 24px; border-left: 4px solid #00ffff; border-radius: 4px; font-size: 16px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.5); z-index: 100; pointer-events: none; line-height: 1.6;
+    }
+    .status-bar b { color: #00ffff; font-size: 18px; font-weight: normal; }
+    .status-bar .sub { font-size: 14px; color: #aaa; margin-top: 6px; }
+    .status-bar .warn { color: #f6c24b; }
+
+    /* 虚拟指尖光标 - 极简 */
+    #cursor {
+      position: fixed; top: 0; left: 0; width: 20px; height: 20px;
+      background: rgba(0, 255, 255, 0.2); border: 2px solid #00ffff;
+      border-radius: 50%; pointer-events: none; z-index: 9999;
+      transform: translate(-50%, -50%); transition: width 0.15s, height 0.15s;
+      opacity: 0;
+    }
+    #cursor.hovered { width: 30px; height: 30px; background: rgba(0, 255, 255, 0.5); }
+
+    /* 小窗追踪 */
+    .cam-container { position: absolute; right: 24px; bottom: 24px; width: 240px; height: 180px; background: #000; border: 1px solid rgba(0,255,255,0.3); border-radius: 4px; overflow: hidden; z-index: 100; }
+    .cam-container video, .cam-container canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
+    .cam-title { position: absolute; top: 6px; left: 8px; color: #00ffff; font-size: 12px; z-index: 10; background: rgba(0,0,0,0.6); padding: 4px 8px; border-radius: 2px; }
+
+    /* 城市群小面板 */
+    #panels-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; }
+    .floating-panel { position: absolute; width: 270px; padding: 14px 18px; background: rgba(10, 20, 40, 0.9); border: 1px solid #00ffff; color: #fff; pointer-events: none; opacity: 0; transition: opacity 0.3s ease; z-index: 10; border-radius: 2px; }
+    .floating-panel::before { content: ''; position: absolute; width: 6px; height: 6px; background: #00ffff; border-radius: 50%; }
+    .floating-panel.pos-left::before { right: -4px; top: 50%; margin-top: -3px; }
+    .floating-panel.pos-right::before { left: -4px; top: 50%; margin-top: -3px; }
+    .panel-title { font-size: 18px; font-weight: bold; color: #f6c24b; margin-bottom: 8px; line-height: 1.3; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 6px; }
+    .panel-subtitle { font-size: 13px; color: #00ffff; font-weight: normal; }
+    .panel-content { font-size: 13px; line-height: 1.8; color: #ccc; }
+    .panel-content b { color: #fff; font-weight: normal; }
+
+    /* 纪录片风格工程横幅 */
+    .project-banner {
+      position: absolute; top: 20%; left: 50%; transform: translate(-50%, -50%);
+      text-align: center; pointer-events: none; opacity: 0; z-index: 95;
+      background: linear-gradient(90deg, transparent, rgba(0,0,0,0.8), transparent);
+      padding: 20px 80px; width: 80%;
+      transition: opacity 0.6s ease;
+    }
+    .project-banner.show { opacity: 1; }
+    .project-banner h2 { font-size: 42px; margin: 0 0 10px 0; font-weight: bold; letter-spacing: 6px; }
+    .project-banner p { font-size: 20px; color: #ccc; margin: 0; letter-spacing: 2px;}
+
+    /* 最终绽放面板 - 简洁现代 */
+    .bloom-panel { position: absolute; right: 40px; top: 40px; width: 340px; padding: 24px; background: rgba(15, 20, 30, 0.95); border-top: 4px solid #e64a19; box-shadow: 0 10px 30px rgba(0,0,0,0.8); color: #fff; border-radius: 2px; opacity: 0; pointer-events: none; transition: opacity 1s ease 0.5s; z-index: 20; }
+    .bloom-title { font-size: 22px; font-weight: bold; color: #e64a19; margin-bottom: 10px; }
+    .bloom-subtitle { font-size: 14px; color: #aaa; margin-bottom: 16px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; }
+    .bloom-content { font-size: 14px; line-height: 2; color: #ddd; }
+    .bloom-content span { color: #fff; font-weight: bold; }
+
+    #flash-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fff; opacity: 0; pointer-events: none; z-index: 999; transition: opacity 0.3s ease-out; }
+  </style>
+
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+</head>
+<body>
+  <div class="content">
+    <div class="tag left" id="tag-left">西算</div>
+    <div class="tag right" id="tag-right">东数</div>
+
+    <div class="status-bar" id="status-bar">系统初始化中...</div>
+
+    <div id="cursor"></div>
+    <div id="flash-overlay"></div>
+
+    <div class="cam-container">
+      <div class="cam-title">手势捕捉系统</div>
+      <video id="webcam" autoplay playsinline style="opacity: 0.01;"></video>
+      <canvas id="output_canvas" width="640" height="480"></canvas>
+    </div>
+
+    <div id="project-banner" class="project-banner">
+      <h2 id="banner-title">工程名称</h2>
+      <p id="banner-desc">工程描述</p>
+    </div>
+
+    <div class="chart-wrapper">
+      <div id="charts"></div>
+      <div id="panels-container"></div>
+
+      <div class="bloom-panel" id="bloom-panel">
+        <div class="bloom-title">西部大开发·路网贯通</div>
+        <div class="bloom-subtitle">跨越地理天堑的国家基建</div>
+        <div class="bloom-content">
+          • <span>破除屏障</span>：打通横断山脉与西北戈壁，完成基建史上的奇迹。<br>
+          • <span>动脉蔓延</span>：铁路与公路网深入西部腹地，串联起无数偏远城镇。<br>
+          • <span>共同富裕</span>：胡焕庸线不再是阻碍，东部的资金、产业与人才正全面反哺大西北。
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ==========================================
+    // ECharts 基础与路线数据 (拟真坐标)
+    // ==========================================
+    const planePath = 'path://M1705.06,1318.313v-89.254l-319.9-221.799l0.073-208.063c0.521-84.662-26.629-121.796-63.961-121.491c-37.332-0.305-64.482,36.829-63.961,121.491l0.073,208.063l-319.9,221.799v89.254l330.343-157.288l12.238,241.308l-134.449,92.931l0.531,42.034l175.125-42.917l175.125,42.917l0.531-42.034l-134.449-92.931l12.238-241.308L1705.06,1318.313z';
+
+    // 胡焕庸线
+    const huLineData = [{ coords: [[127.499, 50.249], [98.494, 25.025]] }];
+    const huPointsData = [ { name: '黑河', value: [127.499, 50.249], label: { position: 'left' } }, { name: '腾冲', value: [98.494, 25.025], label: { position: 'right' } } ];
+
+    const HUB = { IM: '内蒙古', GS: '甘肃', NX: '宁夏', GZ: '贵州', CY: '成渝', JJJ: '京津冀', YRD: '长三角', GBA: '粤港澳' };
+    const hubsWest = [ { name: HUB.IM, coord: [111.749, 40.842] }, { name: HUB.GS, coord: [103.834, 36.061] }, { name: HUB.NX, coord: [106.230, 38.487] }, { name: HUB.GZ, coord: [106.630, 26.647] }, { name: HUB.CY, coord: [104.066, 30.573] } ];
+    const hubsEast = [ { name: HUB.JJJ, coord: [116.407, 39.904] }, { name: HUB.YRD, coord: [121.473, 31.230] }, { name: HUB.GBA, coord: [113.264, 23.129] } ];
+    const hubIndex = new Map([...hubsWest, ...hubsEast].map(d => [d.name, d.coord]));
+    const f1LinesData = [ [HUB.JJJ, HUB.IM], [HUB.JJJ, HUB.NX], [HUB.JJJ, HUB.GS], [HUB.YRD, HUB.CY], [HUB.YRD, HUB.GZ], [HUB.YRD, HUB.GS], [HUB.GBA, HUB.GZ], [HUB.GBA, HUB.CY] ].map(([from, to]) => ({ fromName: from, toName: to, coords: [hubIndex.get(from), hubIndex.get(to)] }));
+    const pointsWest = hubsWest.map(d => ({ name: d.name, value: [...d.coord, 1], itemStyle: { color: '#f6c24b' } }));
+    const pointsEast = hubsEast.map(d => ({ name: d.name, value: [...d.coord, 1], itemStyle: { color: '#36f4ff' } }));
+    const f1Gradient = new echarts.graphic.LinearGradient(0, 0, 0, 1, [{ offset: 0, color: 'rgba(255, 214,  90, .95)' }, { offset: 1, color: 'rgba( 90, 255, 245, .85)' }]);
+
+    const feature2Steps = [
+      { provinces: ['四川', '重庆'], centers: [{ name: '成都', coord: [104.06, 30.57] }, { name: '重庆', coord: [106.55, 29.56] }], callout: { start: [104.06, 30.57], turn: [96, 25], end: [84, 25], pos: 'left' }, title: '成渝城市群', subtitle: '西部第一增长极', content: `• <b>定位</b>：西部核心极<br>• <b>作用</b>：吸引人口回流` },
+      { provinces: ['陕西'], centers: [{ name: '西安', coord: [108.93, 34.34] }], callout: { start: [108.93, 34.34], turn: [115, 38], end: [122, 38], pos: 'right' }, title: '关中平原城市群', subtitle: '西北龙头', content: `• <b>定位</b>：西北龙头<br>• <b>作用</b>：带动陕甘东部` },
+      { provinces: ['甘肃', '青海'], centers: [{ name: '兰州', coord: [103.83, 36.06] }, { name: '西宁', coord: [101.77, 36.61] }], callout: { start: [103.83, 36.06], turn: [95, 43], end: [84, 43], pos: 'left' }, title: '兰西城市群', subtitle: '西北门户支点', content: `• <b>定位</b>：丝路通道枢纽<br>• <b>作用</b>：保障生态` }
+    ];
+
+    // 多阶段基建工程数据 (使用多点折线，模拟真实地理走向)
+    const infraStages = [
+      {
+        name: "川藏铁路", desc: "跨越横断山脉，人类基建史上的奇迹", color: "#e64a19",
+        lines: [
+          // 成都 -> 康定 -> 昌都 -> 林芝 -> 拉萨
+          [ [104.06, 30.57], [101.96, 30.04], [97.17, 31.14], [94.36, 29.65], [91.11, 29.64] ]
+        ]
+      },
+      {
+        name: "连霍高速 & 兰新线", desc: "西北大动脉，直通亚欧大陆桥", color: "#1976d2",
+        lines: [
+          // 西安 -> 兰州 -> 嘉峪关 -> 吐鲁番 -> 乌鲁木齐
+          [ [108.93, 34.34], [107.15, 34.36], [103.83, 36.06], [98.29, 39.77], [89.18, 42.95], [87.68, 43.77] ]
+        ]
+      },
+      {
+        name: "青藏线与西南路网", desc: "突破冻土与喀斯特地貌的封锁", color: "#388e3c",
+        lines: [
+          // 西宁 -> 格尔木 -> 拉萨
+          [ [101.77, 36.61], [94.90, 36.40], [92.00, 33.00], [91.11, 29.64] ],
+          // 成都 -> 西昌 -> 昆明
+          [ [104.06, 30.57], [102.26, 27.88], [102.71, 25.04] ],
+          // 重庆 -> 贵阳
+          [ [106.55, 29.56], [106.63, 26.64] ]
+        ]
+      },
+      {
+        name: "边疆交通网", desc: "干线向外延伸，全面激活大西北", color: "#fbc02d",
+        lines: [
+          // 乌鲁木齐 -> 喀什
+          [ [87.68, 43.77], [86.14, 41.76], [80.24, 41.16], [75.98, 39.46] ],
+          // 银川 -> 西安
+          [ [106.27, 38.47], [107.50, 36.50], [108.93, 34.34] ],
+          // 昆明 -> 瑞丽
+          [ [102.71, 25.04], [100.22, 25.59], [97.85, 24.01] ]
+        ]
+      }
+    ];
+
+    let accumulatedInfraLines = [];   // 保存折线数据
+    let currentInfraStage = 0;
+
+    // 地图底色
+    const baseGeoItemStyle = { borderColor: '#405982', borderWidth: 1, areaColor: '#0E2152' };
+    const brightGeoItemStyle = { borderColor: '#5A75A6', borderWidth: 1, areaColor: '#1A3365' }; // 点亮后稍微变亮，不要太刺眼
+    const westProvincesList = ['新疆', '西藏', '青海', '甘肃', '宁夏', '四川', '重庆', '贵州', '云南', '陕西', '广西'];
+
+    let chart;
+    let allProvinceNames = [];
+    let appState = 'IDLE';
+    let activeHoverIndex = -1;
+    let hasTriggeredIntro = false;
+
+    const renderHuLine = [
+      { name: '胡线', type: 'lines', coordinateSystem: 'geo', zlevel: 2, silent: true, lineStyle: { color: 'rgba(255, 255, 255, 0.4)', width: 1.5, type: 'dashed' }, data: huLineData },
+      { name: '胡线点', type: 'scatter', coordinateSystem: 'geo', zlevel: 2, silent: true, symbolSize: 4, itemStyle: { color: '#ccc' }, label: { show: true, formatter: '{b}', color: '#ccc', fontSize: 12, distance: 6 }, data: huPointsData }
+    ];
+
+    async function initECharts() {
+      chart = echarts.init(document.getElementById('charts'));
+      try {
+        const res = await fetch('./Chinas.json');
+        if (!res.ok) throw new Error(`Network response was not ok (${res.status})`);
+        const china = await res.json();
+        echarts.registerMap('china', china);
+        allProvinceNames = (china.features || []).map(f => (f.properties && (f.properties.name || f.properties.NAME)) || '').filter(Boolean);
+      } catch (err) {
+        document.getElementById('status-bar').innerHTML = `<b style="color:red;">数据错误</b><br><div class="sub">无法加载 Chinas.json，请检查文件是否存在。</div>`;
+        return;
+      }
+
+      const container = document.getElementById('panels-container');
+      feature2Steps.forEach((step, i) => {
+        const div = document.createElement('div');
+        div.className = `floating-panel pos-${step.callout.pos}`;
+        div.id = `panel-${i}`;
+        div.innerHTML = `<div class="panel-title">${step.title}<br><span class="panel-subtitle">${step.subtitle}</span></div><div class="panel-content">${step.content}</div>`;
+        container.appendChild(div);
+      });
+
+      const option = {
+        backgroundColor: 'transparent',
+        geo: { map: 'china', roam: false, zoom: 1.16, label: { show: true, color: 'rgba(255,255,255,.4)', fontSize: 10 }, itemStyle: baseGeoItemStyle, emphasis: { label: { color: '#fff' }, itemStyle: { areaColor: '#2386AD', borderWidth: 0 } }, regions: [] },
+        series: [
+          ...renderHuLine,
+          { name: 'F1-西', type: 'effectScatter', coordinateSystem: 'geo', zlevel: 3, rippleEffect: { scale: 4, brushType: 'stroke' }, symbolSize: 10, label: { show: true, position: 'left', color: '#fff', fontSize: 14, formatter: '{b}' }, itemStyle: { color: '#f6c24b' }, data: [] },
+          { name: 'F1-东', type: 'effectScatter', coordinateSystem: 'geo', zlevel: 3, rippleEffect: { scale: 4, brushType: 'stroke' }, symbolSize: 10, label: { show: true, position: 'right', color: '#fff', fontSize: 14, formatter: '{b}' }, itemStyle: { color: '#36f4ff' }, data: [] },
+          { name: 'F1-底线', type: 'lines', coordinateSystem: 'geo', zlevel: 2, lineStyle: { color: f1Gradient, width: 3, opacity: 0.6, curveness: 0.16 }, data: [] },
+          { name: 'F1-飞机', type: 'lines', coordinateSystem: 'geo', zlevel: 6, effect: { show: true, period: 6, trailLength: 0, symbol: planePath, symbolSize: 14 }, lineStyle: { color: f1Gradient, width: 0, opacity: 0, curveness: 0.16 }, data: [] },
+
+          { name: 'F2-中心', type: 'effectScatter', coordinateSystem: 'geo', zlevel: 10, rippleEffect: { scale: 4, brushType: 'stroke' }, symbolSize: 10, label: { show: true, position: 'top', color: '#fff', fontSize: 12, formatter: '{b}' }, itemStyle: { color: '#00ffff' }, data: [] },
+          { name: 'F2-引线', type: 'lines', coordinateSystem: 'geo', zlevel: 10, polyline: true, lineStyle: { color: '#00ffff', width: 1.5, opacity: 0.8 }, data: [] },
+
+          // F3 拟真交通网 (Polyline 模式)
+          {
+            name: 'F3-基建网', type: 'lines', coordinateSystem: 'geo', zlevel: 8, polyline: true,
+            // 光点在轨道上跑的效果，代表车流
+            effect: { show: true, period: 4, trailLength: 0.2, color: '#fff', symbolSize: 3 },
+            // 这里不在 option 里写死颜色，而是在数据里指定颜色
+            lineStyle: { width: 2, opacity: 0.8 },
+            data: []
+          }
+        ]
+      };
+      chart.setOption(option);
+      window.addEventListener('resize', () => { chart.resize(); updateAllPanelPositions(); });
+    }
+
+    function advanceStage() {
+      if (appState === 'IDLE' && !hasTriggeredIntro) {
+        hasTriggeredIntro = true;
+        appState = 'INTRO';
+        document.getElementById('status-bar').innerHTML = `<b>第一幕：算力网络</b><br><div class="sub">东数西算演示中...</div>`;
+        document.getElementById('tag-left').style.opacity = '1';
+        document.getElementById('tag-right').style.opacity = '1';
+
+        chart.setOption({ series: [ ...renderHuLine, { name: 'F1-西', data: pointsWest }, { name: 'F1-东', data: pointsEast }, { name: 'F1-底线', data: f1LinesData }, { name: 'F1-飞机', data: f1LinesData } ] });
+
+        setTimeout(() => {
+          if(appState !== 'INTRO') return;
+          appState = 'INTERACTIVE';
+          document.getElementById('status-bar').innerHTML = `<b>第二幕：重点城市群</b><br><div class="sub">👆 用<b>指尖悬停地图</b>探索<br>👋 <b>再次向左挥手</b>进入基建篇</div>`;
+          document.getElementById('tag-left').style.opacity = '0';
+          document.getElementById('tag-right').style.opacity = '0';
+          chart.setOption({ series: [ { name: 'F1-西', data: [] }, { name: 'F1-东', data: [] }, { name: 'F1-底线', data: [] }, { name: 'F1-飞机', data: [] } ] });
+        }, 5500);
+
+      } else if (appState === 'INTERACTIVE') {
+        appState = 'F3_READY';
+        highlightCluster(-1);
+        document.getElementById('status-bar').innerHTML = `<b>第三幕：国家基建工程</b><br><div class="sub">👉 请在空中<b>✊握紧拳头</b>，蓄满力量后张开，修建交通干线。</div>`;
+      }
+    }
+
+    // ==========================================
+    // 横幅与地图更新
+    // ==========================================
+    function showBanner(title, desc, color) {
+        const banner = document.getElementById('project-banner');
+        const titleEl = document.getElementById('banner-title');
+        const descEl = document.getElementById('banner-desc');
+        if(!banner) return;
+
+        titleEl.innerText = title;
+        descEl.innerText = desc;
+        titleEl.style.color = color;
+
+        banner.classList.remove('show');
+        void banner.offsetWidth;
+        banner.classList.add('show');
+        setTimeout(() => { banner.classList.remove('show'); }, 3500);
+    }
+
+    function triggerScreenFlash() {
+        const flash = document.getElementById('flash-overlay');
+        if (flash) {
+            flash.style.opacity = '0.3'; // 轻微白闪
+            setTimeout(() => flash.style.opacity = '0', 200);
+        }
+    }
+
+    function updateMapInfra() {
+      chart.setOption({
+        series: [
+          { name: 'F3-基建网', data: accumulatedInfraLines }
+        ]
+      });
+    }
+
+    // ==========================================
+    // MediaPipe 视觉引擎 (纯UI环形蓄力，无烟花)
+    // ==========================================
+    const videoElement = document.getElementById('webcam');
+    const canvasElement = document.getElementById('output_canvas');
+    const canvasCtx = canvasElement.getContext('2d');
+    const cursorElement = document.getElementById('cursor');
+
+    let curX = window.innerWidth / 2, curY = window.innerHeight / 2;
+    let tgtX = curX, tgtY = curY;
+    let swipeHistory = [], lastSwipeTime = 0;
+    let isFistNow = false, chargeStartTime = 0, chargeDuration = 0;
+
+    function isHandFist(landmarks) {
+        const wrist = landmarks[0];
+        const tips = [8, 12, 16, 20].map(i => landmarks[i]);
+        const palmRef = Math.hypot(landmarks[0].x - landmarks[5].x, landmarks[0].y - landmarks[5].y);
+        let closed = true;
+        for (let tip of tips) {
+            if (Math.hypot(tip.x - wrist.x, tip.y - wrist.y) > palmRef * 1.5) { closed = false; break; }
+        }
+        return closed;
+    }
+
+    async function initAI() {
+      const hands = new Hands({ locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}` });
+      hands.setOptions({ maxNumHands: 1, modelComplexity: 1, minDetectionConfidence: 0.6, minTrackingConfidence: 0.6 });
+      hands.onResults(onHandResults);
+      const camera = new Camera(videoElement, { onFrame: async () => { await hands.send({ image: videoElement }); }, width: 640, height: 480 });
+      camera.start().then(() => { document.getElementById('status-bar').innerHTML = `启动 AI 视觉模型...`; });
+    }
+
+    function onHandResults(results) {
+      if (!hasTriggeredIntro && appState === 'IDLE') {
+        document.getElementById('status-bar').innerHTML = `<b>AI 视觉已就绪</b><br><div class="sub">👋 <b>向左挥动</b>启动系统</div>`;
+        if(cursorElement) cursorElement.style.opacity = '1';
+      }
+
+      canvasCtx.save(); canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+      canvasCtx.drawImage(results.image, 0, 0, canvasElement.width, canvasElement.height);
+
+      if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
+        const landmarks = results.multiHandLandmarks[0];
+        // 绘制简单的骨骼线
+        drawConnectors(canvasCtx, landmarks, HAND_CONNECTIONS, {color: 'rgba(0,255,255,0.5)', lineWidth: 2});
+        drawLandmarks(canvasCtx, landmarks, {color: '#fff', lineWidth: 1, radius: 2});
+
+        const indexTip = landmarks[8];
+        const palmBase = landmarks[0];
+
+        tgtX = (1 - indexTip.x) * window.innerWidth;
+        tgtY = indexTip.y * window.innerHeight;
+
+        const now = Date.now();
+
+        // 挥手检测
+        if (!hasTriggeredIntro || appState === 'INTERACTIVE') {
+          if (now - lastSwipeTime > 2000) {
+            swipeHistory.push({ x: palmBase.x, y: palmBase.y, time: now });
+            swipeHistory = swipeHistory.filter(p => now - p.time < 800);
+            if (swipeHistory.length > 3) {
+              const dx = swipeHistory[swipeHistory.length-1].x - swipeHistory[0].x;
+              const dy = Math.abs(swipeHistory[swipeHistory.length-1].y - swipeHistory[0].y);
+              if (Math.abs(dx) > 0.15 && Math.abs(dx) > dy) {
+                lastSwipeTime = now; swipeHistory = []; advanceStage();
+              }
+            }
+          }
+        }
+
+        // 蓄力检测 (极简科技环形UI)
+        if (appState === 'F3_READY') {
+            const fist = isHandFist(landmarks);
+
+            if (fist && !isFistNow) {
+                isFistNow = true;
+                chargeStartTime = now;
+            }
+
+            if (fist && isFistNow) {
+                chargeDuration = (now - chargeStartTime) / 1000;
+                let pct = Math.min(1, chargeDuration / 1.2); // 1.2秒蓄满
+                let displayPct = Math.floor(pct * 100);
+
+                let nextProject = infraStages[currentInfraStage].name;
+                document.getElementById('status-bar').innerHTML = `<b>规划线路：${nextProject} (${displayPct}%)</b><br><div class="sub">积蓄资源中，满100%后张开手掌即刻贯通</div>`;
+
+                // 在摄像头小窗里画面中心绘制科技充能环
+                const cx = (1 - landmarks[9].x) * canvasElement.width;
+                const cy = landmarks[9].y * canvasElement.height;
+
+                canvasCtx.beginPath();
+                canvasCtx.arc(cx, cy, 40, -Math.PI/2, -Math.PI/2 + (Math.PI * 2 * pct));
+                canvasCtx.lineWidth = 6;
+                canvasCtx.strokeStyle = infraStages[currentInfraStage].color;
+                canvasCtx.stroke();
+            }
+
+            if (!fist && isFistNow) {
+                isFistNow = false;
+
+                if (chargeDuration > 1.2) {
+                    const stageData = infraStages[currentInfraStage];
+                    triggerScreenFlash();
+
+                    // 将该阶段的多条线路加入累计数组，并赋予专门的颜色
+                    stageData.lines.forEach(lineCoords => {
+                        accumulatedInfraLines.push({
+                            coords: lineCoords,
+                            lineStyle: { color: stageData.color }
+                        });
+                    });
+
+                    updateMapInfra();
+                    showBanner(stageData.name, stageData.desc, stageData.color);
+
+                    currentInfraStage++;
+                    if (currentInfraStage >= infraStages.length) {
+                        appState = 'F3_BLOOMING';
+                        document.getElementById('status-bar').innerHTML = `<b>西部路网全面贯通</b><br><div class="sub">基建狂魔，跨越天堑</div>`;
+
+                        // 点亮省份底色
+                        const glowingRegions = allProvinceNames.map(p => {
+                            if (westProvincesList.some(w => p.includes(w))) return { name: p, itemStyle: brightGeoItemStyle };
+                            return { name: p, itemStyle: baseGeoItemStyle };
+                        });
+                        chart.setOption({ geo: { regions: glowingRegions } });
+                        setTimeout(() => { document.getElementById('bloom-panel').style.opacity = '1'; }, 1000);
+                    } else {
+                        document.getElementById('status-bar').innerHTML = `<b>${stageData.name} 贯通！</b><br><div class="sub">请继续✊握拳，规划下一条大动脉。</div>`;
+                    }
+                } else {
+                    document.getElementById('status-bar').innerHTML = `<b>规划中断</b><br><div class="sub">请重新✊握拳，直到环形进度达到100%再张开。</div>`;
+                }
+                chargeDuration = 0;
+            }
+        }
+      } else {
+        swipeHistory = [];
+        isFistNow = false;
+      }
+      canvasCtx.restore();
+    }
+
+    function animate() {
+      curX += (tgtX - curX) * 0.25;
+      curY += (tgtY - curY) * 0.25;
+      if(cursorElement) {
+        cursorElement.style.left = curX + 'px';
+        cursorElement.style.top = curY + 'px';
+      }
+
+      if (appState === 'INTERACTIVE' && chart) {
+        const wrapper = document.querySelector('.chart-wrapper');
+        const rect = wrapper.getBoundingClientRect();
+        const chartX = curX - rect.left;
+        const chartY = curY - rect.top;
+
+        let foundIndex = -1, minDistance = Infinity;
+        feature2Steps.forEach((step, i) => {
+          const pxCoords = chart.convertToPixel('geo', step.callout.start);
+          if (pxCoords) {
+            const dist = Math.hypot(pxCoords[0] - chartX, pxCoords[1] - chartY);
+            if (dist < 80 && dist < minDistance) { minDistance = dist; foundIndex = i; }
+          }
+        });
+        highlightCluster(foundIndex);
+      }
+      requestAnimationFrame(animate);
+    }
+
+    function highlightCluster(index) {
+      if (activeHoverIndex === index) return;
+      activeHoverIndex = index;
+      if(cursorElement) cursorElement.className = index === -1 ? '' : 'hovered';
+
+      if (index === -1) {
+        feature2Steps.forEach((_, i) => {
+          let el = document.getElementById(`panel-${i}`);
+          if (el) el.style.opacity = '0';
+        });
+        chart.setOption({ geo: { regions: allProvinceNames.map(name => ({ name, itemStyle: baseGeoItemStyle })) }, series: [ ...renderHuLine, { name: 'F2-中心', data: [] }, { name: 'F2-引线', data: [] } ] });
+      } else {
+        const step = feature2Steps[index];
+        feature2Steps.forEach((_, i) => {
+          let el = document.getElementById(`panel-${i}`);
+          if (el) el.style.opacity = (i === index ? '1' : '0');
+        });
+        const regionsData = allProvinceNames.map(p => {
+          if (step.provinces.some(k => p.includes(k))) return { name: p, itemStyle: { borderColor: '#00ffff', borderWidth: 2, areaColor: 'rgba(0, 255, 255, 0.1)' }};
+          return { name: p, itemStyle: baseGeoItemStyle };
+        });
+        chart.setOption({ geo: { regions: regionsData }, series: [ ...renderHuLine, { name: 'F2-中心', data: step.centers.map(c => ({ name: c.name, value: [...c.coord, 1] })) }, { name: 'F2-引线', data: [{ coords: [step.callout.start, step.callout.turn, step.callout.end] }] } ] });
+        updateAllPanelPositions();
+      }
+    }
+
+    function updateAllPanelPositions() {
+      feature2Steps.forEach((step, i) => {
+        const el = document.getElementById(`panel-${i}`);
+        if (!el || el.style.opacity === '0') return;
+        const pos = chart.convertToPixel('geo', step.callout.end);
+        if (!pos) return;
+        el.style.left = step.callout.pos === 'left' ? (pos[0] - el.offsetWidth - 16) + 'px' : (pos[0] + 16) + 'px';
+        el.style.top = (pos[1] - el.offsetHeight / 2) + 'px';
+      });
+    }
+
+    initECharts().then(() => {
+      initAI();
+      animate();
+    });
+  </script>
+</body>
+</html>
