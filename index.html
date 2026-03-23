@@ -4,6 +4,17 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Gesture Interactive Tree - Prototype</title>
+    <script>
+      // 向父窗口发送场景信息
+      if (window.parent !== window) {
+        window.parent.postMessage({
+          type: 'SCENE_INFO',
+          scene: 'intro',
+          title: '自然交互',
+          description: '手势交互原型演示'
+        }, '*');
+      }
+    </script>
     <style>
       :root {
         --bg: #070a10;

@@ -4,6 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>夜光演变 · 定格运镜</title>
+    <script>
+      // 向父窗口发送场景信息
+      if (window.parent !== window) {
+        window.parent.postMessage({
+          type: 'SCENE_INFO',
+          scene: 'timeline',
+          title: '时空演变',
+          description: '2012-2023 夜光数据演变'
+        }, '*');
+      }
+    </script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/build/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/controls/OrbitControls.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tween.js/18.6.4/tween.umd.js"></script>

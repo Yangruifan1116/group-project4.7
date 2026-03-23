@@ -4,6 +4,17 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>ECharts 互动微课（真实基建拟真版）</title>
+  <script>
+    // 向父窗口发送场景信息
+    if (window.parent !== window) {
+      window.parent.postMessage({
+        type: 'SCENE_INFO',
+        scene: 'projects',
+        title: '工程建设',
+        description: '东数西算工程可视化'
+      }, '*');
+    }
+  </script>
   <style>
     html, body { height: 100%; margin: 0; padding: 0; background: #0E2152; overflow: hidden; font-family: -apple-system, "Microsoft YaHei", sans-serif; }
     .content { height: 100%; position: relative; }

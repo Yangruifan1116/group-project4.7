@@ -1,0 +1,467 @@
+/* ============================================
+   主站点样式 - 数字胡焕庸线沉浸式体验
+   ============================================ */
+
+:root {
+    /* 主题色彩系统 */
+    --color-bg-primary: #0a0e1a;
+    --color-bg-secondary: #121826;
+    --color-bg-tertiary: #1a2332;
+    
+    --color-accent-cyan: #00ffff;
+    --color-accent-blue: #0066ff;
+    --color-accent-gold: #ffd700;
+    --color-accent-orange: #ff6b35;
+    --color-accent-green: #00ff88;
+    
+    --color-text-primary: rgba(255, 255, 255, 0.95);
+    --color-text-secondary: rgba(255, 255, 255, 0.7);
+    --color-text-muted: rgba(255, 255, 255, 0.5);
+    
+    /* 导航栏样式 */
+    --nav-height: 80px;
+    --nav-bg: rgba(10, 14, 26, 0.95);
+    --nav-border: rgba(0, 255, 255, 0.2);
+    --nav-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+    
+    /* 动画曲线 */
+    --ease-out-expo: cubic-bezier(0.19, 1, 0.22, 1);
+    --ease-in-out-circ: cubic-bezier(0.85, 0, 0.15, 1);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html, body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    font-family: -apple-system, BlinkMacSystemFont, "Microsoft YaHei", "Segoe UI", sans-serif;
+    background: radial-gradient(ellipse at top, var(--color-bg-secondary), var(--color-bg-primary));
+    color: var(--color-text-primary);
+}
+
+/* ============================================
+   全局导航栏
+   ============================================ */
+.main-nav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: var(--nav-height);
+    background: var(--nav-bg);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--nav-border);
+    box-shadow: var(--nav-shadow);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 40px;
+    z-index: 1000;
+    transition: all 0.3s var(--ease-out-expo);
+}
+
+.nav-brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 20px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    color: var(--color-accent-cyan);
+    text-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+}
+
+.brand-icon {
+    font-size: 28px;
+    animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.1); opacity: 0.8; }
+}
+
+/* 进度条 */
+.nav-progress {
+    flex: 1;
+    max-width: 600px;
+    margin: 0 40px;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 2px;
+    overflow: hidden;
+    position: relative;
+}
+
+.progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, 
+        var(--color-accent-cyan) 0%, 
+        var(--color-accent-blue) 50%, 
+        var(--color-accent-gold) 100%);
+    width: 0%;
+    transition: width 0.6s var(--ease-in-out-circ);
+    box-shadow: 0 0 10px var(--color-accent-cyan);
+}
+
+/* 章节导航 */
+.nav-chapters {
+    display: flex;
+    gap: 8px;
+    flex: 2;
+    justify-content: center;
+}
+
+.chapter-btn {
+    position: relative;
+    padding: 10px 20px;
+    background: transparent;
+    border: 1px solid rgba(0, 255, 255, 0.2);
+    color: var(--color-text-secondary);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s var(--ease-out-expo);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    min-width: 120px;
+}
+
+.chapter-btn:hover {
+    background: rgba(0, 255, 255, 0.1);
+    border-color: var(--color-accent-cyan);
+    color: var(--color-text-primary);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0, 255, 255, 0.2);
+}
+
+.chapter-btn.active {
+    background: rgba(0, 255, 255, 0.15);
+    border-color: var(--color-accent-cyan);
+    color: var(--color-accent-cyan);
+    box-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
+}
+
+.chapter-num {
+    font-size: 10px;
+    letter-spacing: 1px;
+    opacity: 0.7;
+}
+
+.chapter-name {
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 1px;
+}
+
+/* 控制按钮 */
+.nav-controls {
+    display: flex;
+    gap: 12px;
+}
+
+.control-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(0, 255, 255, 0.2);
+    color: var(--color-accent-cyan);
+    cursor: pointer;
+    transition: all 0.3s var(--ease-out-expo);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+}
+
+.control-btn:hover {
+    background: rgba(0, 255, 255, 0.2);
+    transform: scale(1.1);
+    box-shadow: 0 0 15px rgba(0, 255, 255, 0.4);
+}
+
+/* ============================================
+   场景容器
+   ============================================ */
+.scene-container {
+    position: absolute;
+    top: var(--nav-height);
+    left: 0;
+    width: 100%;
+    height: calc(100vh - var(--nav-height));
+    overflow: hidden;
+}
+
+.scene {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.6s var(--ease-in-out-circ), visibility 0.6s;
+}
+
+.scene.active {
+    opacity: 1;
+    visibility: visible;
+    z-index: 10;
+}
+
+.scene iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+}
+
+/* ============================================
+   转场动画
+   ============================================ */
+.transition-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle at center, 
+        rgba(0, 255, 255, 0.1) 0%, 
+        rgba(10, 14, 26, 0.98) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.4s var(--ease-in-out-circ), visibility 0.4s;
+}
+
+.transition-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.transition-content {
+    text-align: center;
+}
+
+.transition-spinner {
+    width: 60px;
+    height: 60px;
+    border: 3px solid rgba(0, 255, 255, 0.2);
+    border-top-color: var(--color-accent-cyan);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 20px;
+    box-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.transition-text {
+    font-size: 18px;
+    letter-spacing: 3px;
+    color: var(--color-accent-cyan);
+    text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+}
+
+/* ============================================
+   引导面板
+   ============================================ */
+.guide-panel {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.9);
+    width: min(600px, 90vw);
+    max-height: 80vh;
+    overflow-y: auto;
+    background: rgba(18, 24, 38, 0.98);
+    backdrop-filter: blur(20px);
+    border: 1px solid var(--color-accent-cyan);
+    border-radius: 16px;
+    padding: 40px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7),
+                0 0 40px rgba(0, 255, 255, 0.2);
+    z-index: 3000;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.4s var(--ease-out-expo);
+}
+
+.guide-panel.active {
+    opacity: 1;
+    visibility: visible;
+    transform: translate(-50%, -50%) scale(1);
+}
+
+.guide-close {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    color: var(--color-text-primary);
+    font-size: 24px;
+    cursor: pointer;
+    transition: all 0.3s var(--ease-out-expo);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.guide-close:hover {
+    background: rgba(0, 255, 255, 0.2);
+    transform: rotate(90deg);
+}
+
+.guide-panel h3 {
+    font-size: 28px;
+    color: var(--color-accent-cyan);
+    margin-bottom: 20px;
+    text-align: center;
+    letter-spacing: 2px;
+    text-shadow: 0 0 15px rgba(0, 255, 255, 0.5);
+}
+
+.guide-content p {
+    font-size: 16px;
+    line-height: 1.8;
+    color: var(--color-text-secondary);
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.guide-content h4 {
+    font-size: 18px;
+    color: var(--color-accent-gold);
+    margin: 24px 0 12px;
+    letter-spacing: 1px;
+}
+
+.guide-content ul {
+    list-style: none;
+    padding-left: 0;
+    margin-bottom: 16px;
+}
+
+.guide-content li {
+    padding: 8px 0;
+    font-size: 15px;
+    color: var(--color-text-secondary);
+    line-height: 1.6;
+}
+
+.guide-content kbd {
+    display: inline-block;
+    padding: 4px 10px;
+    font-size: 13px;
+    font-family: monospace;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+    color: var(--color-accent-cyan);
+    margin: 0 4px;
+}
+
+.guide-hint {
+    margin-top: 30px;
+    text-align: center;
+    font-size: 14px;
+    color: var(--color-text-muted);
+    animation: fadeInOut 2s ease-in-out infinite;
+}
+
+@keyframes fadeInOut {
+    0%, 100% { opacity: 0.5; }
+    50% { opacity: 1; }
+}
+
+/* ============================================
+   响应式设计
+   ============================================ */
+@media (max-width: 1024px) {
+    .main-nav {
+        padding: 0 20px;
+    }
+    
+    .nav-chapters {
+        gap: 4px;
+    }
+    
+    .chapter-btn {
+        min-width: 80px;
+        padding: 8px 12px;
+    }
+    
+    .chapter-num {
+        font-size: 9px;
+    }
+    
+    .chapter-name {
+        font-size: 10px;
+    }
+}
+
+@media (max-width: 768px) {
+    .main-nav {
+        flex-wrap: wrap;
+        height: auto;
+        padding: 16px 20px;
+        gap: 12px;
+    }
+    
+    .nav-brand {
+        font-size: 16px;
+    }
+    
+    .nav-progress {
+        order: 3;
+        width: 100%;
+        margin: 0;
+    }
+    
+    .nav-chapters {
+        order: 2;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    
+    .nav-controls {
+        order: 1;
+    }
+    
+    .scene-container {
+        top: calc(var(--nav-height) + 60px);
+        height: calc(100vh - var(--nav-height) - 60px);
+    }
+}
+
+/* ============================================
+   辅助类
+   ============================================ */
+.hidden {
+    display: none !important;
+}
+
+.fade-in {
+    animation: fadeIn 0.6s var(--ease-out-expo);
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}

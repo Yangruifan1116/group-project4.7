@@ -4,6 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cyber Landscape - High Density</title>
+    <script>
+      // 向父窗口发送场景信息
+      if (window.parent !== window) {
+        window.parent.postMessage({
+          type: 'SCENE_INFO',
+          scene: 'vision',
+          title: '未来愿景',
+          description: '粒子地形景观'
+        }, '*');
+      }
+    </script>
     <style>
         body { margin: 0; overflow: hidden; background-color: #000000; font-family: 'Segoe UI', sans-serif; }
         canvas { display: block; }

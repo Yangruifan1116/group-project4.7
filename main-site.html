@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>数字胡焕庸线 · 沉浸式体验</title>
+    <link rel="stylesheet" href="./css/main-site.css" />
+</head>
+<body>
+    <!-- 全局导航 -->
+    <nav id="mainNav" class="main-nav">
+        <div class="nav-brand">
+            <span class="brand-icon">🌐</span>
+            <span class="brand-text">数字胡焕庸线</span>
+        </div>
+        <div class="nav-progress">
+            <div class="progress-bar" id="progressBar"></div>
+        </div>
+        <div class="nav-chapters">
+            <button class="chapter-btn active" data-scene="vision" title="开篇：粒子地形景观">
+                <span class="chapter-num">01</span>
+                <span class="chapter-name">开篇展示</span>
+            </button>
+            <button class="chapter-btn" data-scene="earth" title="第一章：地理认知">
+                <span class="chapter-num">02</span>
+                <span class="chapter-name">地理认知</span>
+            </button>
+            <button class="chapter-btn" data-scene="timeline" title="第二章：时空演变">
+                <span class="chapter-num">03</span>
+                <span class="chapter-name">时空演变</span>
+            </button>
+            <button class="chapter-btn" data-scene="projects" title="第三章：工程建设">
+                <span class="chapter-num">04</span>
+                <span class="chapter-name">工程建设</span>
+            </button>
+            <button class="chapter-btn" data-scene="quiz" title="终章：做题练习">
+                <span class="chapter-num">05</span>
+                <span class="chapter-name">做题练习</span>
+            </button>
+        </div>
+        <div class="nav-controls">
+            <button id="muteBtn" class="control-btn" title="静音/取消静音">
+                <span class="icon">🔊</span>
+            </button>
+            <button id="helpBtn" class="control-btn" title="帮助">
+                <span class="icon">❓</span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- 场景容器 -->
+    <main id="sceneContainer" class="scene-container">
+        <!-- 场景将通过 JavaScript 动态加载 -->
+    </main>
+
+    <!-- 转场动画 -->
+    <div id="transitionOverlay" class="transition-overlay">
+        <div class="transition-content">
+            <div class="transition-spinner"></div>
+            <div class="transition-text" id="transitionText">加载中...</div>
+        </div>
+    </div>
+
+    <!-- 引导面板 -->
+    <div id="guidePanel" class="guide-panel">
+        <button class="guide-close" id="guideClose">&times;</button>
+        <h3>欢迎体验数字胡焕庸线</h3>
+        <div class="guide-content">
+            <p>这是一个关于中国人口地理分布的沉浸式可视化体验。</p>
+            <h4>体验流程：</h4>
+            <ul>
+                <li><strong>开篇展示</strong> - 粒子地形景观</li>
+                <li><strong>地理认知</strong> - 3D 地球与胡焕庸线</li>
+                <li><strong>时空演变</strong> - 夜光数据变化</li>
+                <li><strong>工程建设</strong> - 东数西算工程</li>
+                <li><strong>做题练习</strong> - 选择题测试与错题巩固</li>
+            </ul>
+            <h4>答题操作指南：</h4>
+            <ul>
+                <li>🖐️ <strong>张开手掌</strong> - 切换选项</li>
+                <li>👌 <strong>捏合手指</strong> - 选择答案</li>
+                <li>✊ <strong>握拳</strong> - 确认提交</li>
+            </ul>
+            <h4>键盘快捷键：</h4>
+            <ul>
+                <li><kbd>←</kbd> <kbd>→</kbd> - 切换场景</li>
+                <li><kbd>M</kbd> - 静音/取消静音</li>
+                <li><kbd>H</kbd> - 显示/隐藏帮助</li>
+            </ul>
+            <p class="guide-hint">点击任意处继续</p>
+        </div>
+    </div>
+
+    <!-- 音频元素 -->
+    <audio id="bgMusic" loop>
+        <source src="./audio/background.mp3" type="audio/mpeg" />
+    </audio>
+    <div id="soundEffects"></div>
+
+    <!-- 辅助模块 -->
+    <script src="./js/global-hand-tracker.js"></script>
+    <script src="./js/audio-manager.js"></script>
+  <script src="./js/user-manager.js"></script>
+  <script src="./js/quiz-manager.js"></script>
+
+    <!-- 主应用脚本 -->
+    <script type="module" src="./js/main-app.js"></script>
+</body>
+</html>

@@ -3,7 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>3D地球 · 赛博胡焕庸线</title>
+    <title>3D 地球 · 赛博胡焕庸线</title>
+    <script>
+      // 向父窗口发送场景信息
+      if (window.parent !== window) {
+        window.parent.postMessage({
+          type: 'SCENE_INFO',
+          scene: 'earth',
+          title: '地理认知',
+          description: '3D 地球胡焕庸线可视化'
+        }, '*');
+      }
+    </script>
 
     <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/build/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/renderers/CSS2DRenderer.js"></script>
