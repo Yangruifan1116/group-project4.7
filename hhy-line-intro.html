@@ -105,7 +105,7 @@
     </div>
 
     <video id="earth-video" muted loop crossOrigin="anonymous" playsinline style="display:none">
-        <source src="./earth_video.mp4" type="video/mp4">
+        <source src="assets/video/earth_video.mp4" type="video/mp4">
     </video>
 
     <video id="webcam-input" style="display:none"></video>
@@ -549,7 +549,7 @@
         }
 
         function loadChinaBorder() {
-            new THREE.FileLoader().load('./china.json', (data) => {
+            new THREE.FileLoader().load('./assets/data/china.json', (data) => {
                 try {
                     const json = JSON.parse(data);
                     const group = new THREE.Group();

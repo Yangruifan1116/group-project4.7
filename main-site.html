@@ -4,7 +4,8 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>数字胡焕庸线 · 沉浸式体验</title>
-    <link rel="stylesheet" href="./css/main-site.css" />
+    <!-- 改为 -->
+<link rel="stylesheet" href="./assets/css/main-site.css" />
 </head>
 <body>
     <!-- 全局导航 -->
@@ -93,17 +94,19 @@
 
     <!-- 音频元素 -->
     <audio id="bgMusic" loop>
-        <source src="./audio/background.mp3" type="audio/mpeg" />
+        <!-- 改为 -->
+<source src="./assets/audio/background.mp3" type="audio/mpeg" />
     </audio>
     <div id="soundEffects"></div>
 
     <!-- 辅助模块 -->
-    <script src="./js/global-hand-tracker.js"></script>
-    <script src="./js/audio-manager.js"></script>
-  <script src="./js/user-manager.js"></script>
-  <script src="./js/quiz-manager.js"></script>
+   <!-- 改为 -->
+<script src="./js/core/global-hand-tracker.js"></script>
+<script src="./js/core/audio-manager.js"></script>
+<script src="./js/core/user-manager.js"></script>
+<script type="module" src="./js/pages/main-app.js"></script>
 
     <!-- 主应用脚本 -->
-    <script type="module" src="./js/main-app.js"></script>
+    <script type="module" src="js/pages/main-app.js"></script>
 </body>
 </html>

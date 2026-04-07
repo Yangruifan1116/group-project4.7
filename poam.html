@@ -3,59 +3,144 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cyber Landscape - High Density</title>
-    <script>
-      // 向父窗口发送场景信息
-      if (window.parent !== window) {
-        window.parent.postMessage({
-          type: 'SCENE_INFO',
-          scene: 'vision',
-          title: '未来愿景',
-          description: '粒子地形景观'
-        }, '*');
-      }
-    </script>
+    <title>指间山河界 - 开篇展示</title>
     <style>
-        body { margin: 0; overflow: hidden; background-color: #000000; font-family: 'Segoe UI', sans-serif; }
-        canvas { display: block; }
+        body, html {
+            margin: 0; padding: 0; width: 100%; height: 100%;
+            background-color: #040609;
+            overflow: hidden;
+            font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+        }
 
-        /* UI 面板 */
-        #ui-layer {
-            position: absolute; top: 20px; left: 20px; pointer-events: none; z-index: 10;
+        /* ==========================================
+           1. 高科技入场机械门 (Sci-fi Blast Doors)
+           ========================================== */
+        #split-screen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 9000; pointer-events: auto;
         }
-        .panel {
-            background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(8px);
-            padding: 20px; border-radius: 4px; border: 1px solid rgba(0, 255, 255, 0.2);
-            color: #eee; width: 260px; pointer-events: auto;
-        }
-        h1 {
-            margin: 0 0 15px 0; font-size: 14px; letter-spacing: 2px;
-            text-transform: uppercase; color: #00ffff; text-align: center;
-            border-bottom: 1px solid rgba(0, 255, 255, 0.2); padding-bottom: 10px;
-        }
-        .status-text { font-size: 12px; color: #888; display: block; text-align: center; margin-bottom: 10px; }
-        button {
-            width: 100%; padding: 10px; background: transparent;
-            border: 1px solid #00ffff; color: #00ffff;
-            cursor: pointer; font-size: 12px; transition: 0.3s;
-            text-transform: uppercase; letter-spacing: 1px;
-        }
-        button:hover { background: rgba(0, 255, 255, 0.2); box-shadow: 0 0 15px rgba(0,255,255,0.4); }
 
-        /* 摄像头小窗 */
-        #cam-container {
-            position: absolute; bottom: 20px; right: 20px;
-            width: 160px; height: 120px; z-index: 5;
-            border: 1px solid #333; background: #000;
+        .split-half {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: #020408;
+            background-image:
+                linear-gradient(rgba(0, 255, 204, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 255, 204, 0.05) 1px, transparent 1px);
+            background-size: 40px 40px; background-position: center center;
+            transition: transform 2.5s cubic-bezier(0.77, 0, 0.175, 1), opacity 2s ease 0.5s;
+            box-shadow: inset 0 0 100px rgba(0,0,0,0.9);
+        }
+
+        .hud-data {
+            position: absolute; color: rgba(0, 255, 204, 0.3);
+            font-family: monospace; font-size: 12px; pointer-events: none;
+        }
+        .data-tl { top: 30px; left: 30px; }
+        .data-br { bottom: 30px; right: 30px; text-align: right; }
+
+        #split-top-left { clip-path: polygon(0 0, 85% 0, 18% 100%, 0 100%); }
+        #split-bottom-right { clip-path: polygon(85% 0, 100% 0, 100% 100%, 18% 100%); }
+
+        .split-open { pointer-events: none; }
+        .split-open #split-top-left { transform: translate(-80px, -80px) scale(1.05); opacity: 0; }
+        .split-open #split-bottom-right { transform: translate(80px, 80px) scale(1.05); opacity: 0; }
+
+        .screen-shake { animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both; }
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-2px, 2px, 0); }
+            20%, 80% { transform: translate3d(4px, -2px, 0); }
+            30%, 50%, 70% { transform: translate3d(-6px, 4px, 0); }
+            40%, 60% { transform: translate3d(6px, -4px, 0); }
+        }
+
+        #guide-container {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 9001; pointer-events: none; transition: opacity 0.3s ease;
+        }
+        #split-prompt {
+            position: absolute; top: 40%; left: 0; width: 100%; text-align: center;
+            color: #00ffcc; font-size: 26px; letter-spacing: 15px; font-weight: bold;
+            text-shadow: 0 0 20px rgba(0, 255, 204, 0.8); animation: pulse 2s infinite;
+        }
+        @keyframes pulse { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; } }
+
+        #guide-hand-icon {
+            position: absolute; font-size: 60px; filter: drop-shadow(0 0 15px #00ffcc);
+            animation: swipeGuide 2.5s infinite ease-in-out; opacity: 0;
+        }
+        @keyframes swipeGuide {
+            0% { top: 15%; left: 75%; opacity: 0; transform: scale(1.2) rotate(-20deg); }
+            15% { opacity: 0.9; }
+            75% { top: 80%; left: 25%; opacity: 0.9; transform: scale(1) rotate(-20deg); }
+            100% { top: 85%; left: 20%; opacity: 0; transform: scale(0.9) rotate(-20deg); }
+        }
+
+        #hu-line-svg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; transition: opacity 0.5s ease; }
+        .split-open #hu-line-svg { opacity: 0; }
+
+        #glowing-line {
+            stroke-dasharray: 3000; stroke-dashoffset: 3000;
+            transition: stroke-dashoffset 0.6s cubic-bezier(0.1, 0.9, 0.2, 1);
+        }
+        .drawing-laser #glowing-line { stroke-dashoffset: 0; }
+        .drawing-laser #guide-container { opacity: 0; }
+
+        #flashbang {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #fff; opacity: 0; z-index: 10000; pointer-events: none;
+        }
+        .trigger-flash { animation: flashAnim 1s ease-out forwards; }
+        .fade-out-flash { animation: fadeToWhite 1.5s ease-in forwards; }
+        @keyframes flashAnim { 0% { opacity: 1; } 100% { opacity: 0; } }
+        @keyframes fadeToWhite { 0% { opacity: 0; } 100% { opacity: 1; } }
+
+        /* ==========================================
+           全局指尖追踪光标
+           ========================================== */
+        #global-cursor {
+            position: fixed; top: 0; left: 0; width: 40px; height: 40px;
+            border: 2px solid rgba(212, 175, 55, 0.8); border-radius: 50%;
+            transform: translate(-50%, -50%); pointer-events: none; z-index: 10001;
+            box-shadow: 0 0 20px rgba(212, 175, 55, 0.6);
+            display: flex; justify-content: center; align-items: center;
+            opacity: 0; transition: opacity 0.2s;
+        }
+        #global-cursor::after {
+            content: ''; width: 6px; height: 6px; background: #fff;
+            border-radius: 50%; box-shadow: 0 0 10px #fff;
+        }
+        #global-cursor.tracking { opacity: 1; }
+
+        /* ==========================================
+           2. 粒子主画布与UI
+           ========================================== */
+        canvas { display: block; width: 100%; height: 100%; position: absolute; z-index: 1; }
+
+        #intro-ui {
+            position: absolute; bottom: 12%; width: 100%; text-align: center; pointer-events: none; z-index: 10;
+            opacity: 0; transition: opacity 2s ease;
+        }
+        #intro-ui.show-ui { opacity: 1; pointer-events: auto; }
+
+        .subtitle {
+            font-size: 20px; color: #a4b8c6; letter-spacing: 12px; margin-bottom: 20px; text-shadow: 0 2px 10px rgba(0, 0, 0, 0.8); font-weight: 300;
+        }
+
+        .sys-status {
+            font-size: 16px; color: #00ffcc; letter-spacing: 4px; font-weight: bold; text-shadow: 0 0 10px rgba(0, 255, 204, 0.5);
+            background: rgba(0,0,0,0.5); display: inline-block; padding: 10px 30px; border-radius: 30px; border: 1px solid rgba(0,255,204,0.3);
+        }
+
+        #vision-sensor {
+            position: absolute; bottom: 30px; left: 30px; width: 140px; height: 140px; z-index: 20;
+            border-radius: 50%; overflow: hidden; border: 2px solid rgba(0, 255, 204, 0.4);
+            background: rgba(0,0,0,0.5); box-shadow: 0 0 20px rgba(0, 255, 204, 0.2);
             transform: scaleX(-1); opacity: 0.8;
         }
-        #cam-video { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0.4; }
-        #output-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 6; }
+        #feed-src { position: absolute; width: 100%; height: 100%; object-fit: cover; opacity: 0.4; filter: sepia(1) hue-rotate(180deg) saturate(2); }
+        #overlay-layer { position: absolute; width: 100%; height: 100%; z-index: 21; }
     </style>
 
-    <!-- Three.js -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <!-- MediaPipe -->
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
@@ -63,396 +148,418 @@
 </head>
 <body>
 
-    <div id="ui-layer">
-        <div class="panel">
-            <h1>Particle Void</h1>
-            <span class="status-text" id="status-text">初始化渲染引擎...</span>
-            <button id="fs-btn">进入全屏沉浸</button>
-            <div style="font-size:10px; color:#555; margin-top:10px; text-align:center;">
-                * 性能提示: 包含35万个GPU粒子 *
-            </div>
-        </div>
+    <div id="flashbang"></div>
+    <div id="global-cursor"></div>
+    <canvas id="main-canvas"></canvas>
+
+    <div id="intro-ui">
+        <div class="subtitle">数字胡焕庸线 · 沉浸式教学系统</div>
+        <div class="sys-status" id="sys-msg">【 指令：单指拨墨 / 双指起山 / 持续捏合进入系统 】</div>
     </div>
 
-    <div id="cam-container">
-        <video id="cam-video" playsinline muted autoplay></video>
-        <canvas id="output-canvas"></canvas>
+    <div id="vision-sensor">
+        <video id="feed-src" playsinline muted autoplay></video>
+        <canvas id="overlay-layer"></canvas>
+    </div>
+
+    <div id="split-screen">
+        <div id="split-top-left" class="split-half">
+            <div class="hud-data data-tl">
+                SYS.INIT // GEO-SPATIAL MAPPING<br>POPULATION DENSITY: 94% SE | 6% NW<br>WAITING FOR KINETIC TRIGGER...
+            </div>
+        </div>
+        <div id="split-bottom-right" class="split-half">
+            <div class="hud-data data-br">
+                HU HUANYONG LINE BOUNDARY<br>LAT: 50.24°N, LON: 127.53°E TO<br>LAT: 25.02°N, LON: 98.49°E
+            </div>
+        </div>
+        <div id="guide-container">
+            <div id="split-prompt">SYSTEM LOCKED<br><span style="font-size:16px; color:#aaa; font-weight:normal;">凌空挥斩 · 激活结界</span></div>
+            <div id="guide-hand-icon">🖐️</div>
+        </div>
+        <svg id="hu-line-svg">
+            <defs>
+                <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+                    <feGaussianBlur stdDeviation="6" result="blur" />
+                    <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                </filter>
+            </defs>
+            <line x1="85%" y1="0%" x2="18%" y2="100%" stroke="rgba(0, 255, 204, 0.2)" stroke-width="1" stroke-dasharray="20 10"/>
+            <line id="glowing-line" x1="85%" y1="0%" x2="18%" y2="100%" stroke="#00ffcc" stroke-width="6" filter="url(#glow)"/>
+        </svg>
     </div>
 
     <script>
-        // ================= 配置参数 =================
-        const CONFIG = {
-            particleCount: 350000, // 粒子总量，根据图片密度要求大幅提升
-            rangeX: 120,           // 场景宽度
-            rangeZ: 140,           // 场景深度
-            lineCount: 400,        // Z轴方向的线条数量（模拟层积岩纹理）
-            colorRiver: new THREE.Color('rgba(253,232,3,0.94)'), // 金色河流
-            colorMtBase: new THREE.Color('#002044'), // 山脚深蓝
-            colorMtTop: new THREE.Color('#00fff7')   // 山顶青色
-        };
+        let hasTriggeredSplit = false;
+        let isTransitioningToEarth = false;
+        let pinchHoldProgress = 0;
 
-        // ================= 1. Three.js 场景 =================
-        const scene = new THREE.Scene();
-        scene.background = new THREE.Color('#000000');
-        scene.fog = new THREE.FogExp2(0x000000, 0.015); // 黑色雾气隐藏远处边界
-
-        const camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 500);
-        camera.position.set(0, 15, 40); // 较高的俯视角度
-        camera.lookAt(0, 0, -20);
-
-        const renderer = new THREE.WebGLRenderer({ antialias: false, powerPreference: "high-performance" });
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5)); // 限制像素比以保证流畅度
-        document.body.appendChild(renderer.domElement);
-
-        // ================= 2. 几何体生成 (按行扫描) =================
-        const geometry = new THREE.BufferGeometry();
-        const positions = [];
-        const randoms = []; // 用于噪声偏移
-        const lineIndices = []; // 记录是第几行，用于产生纹理感
-
-        // 我们使用“行”的概念来生成，让粒子看起来像是一条条等高线
-        const pointsPerLine = Math.floor(CONFIG.particleCount / CONFIG.lineCount);
-
-        for (let i = 0; i < CONFIG.lineCount; i++) {
-            // Z轴坐标（深度）
-            const z = (i / CONFIG.lineCount - 0.5) * CONFIG.rangeZ;
-
-            for (let j = 0; j < pointsPerLine; j++) {
-                // X轴坐标（横向），均匀分布，但后续Shader会根据它来决定是否丢弃
-                const x = (j / pointsPerLine - 0.5) * CONFIG.rangeX;
-
-                positions.push(x, 0, z); // Y由Shader决定
-
-                // 传入随机值
-                randoms.push(Math.random(), Math.random(), Math.random());
-                lineIndices.push(i / CONFIG.lineCount);
-            }
-        }
-
-        // 添加一些额外的“悬浮光尘”在空中
-        const dustCount = 20000;
-        for(let i=0; i<dustCount; i++) {
-            positions.push(
-                (Math.random()-0.5)*CONFIG.rangeX,
-                Math.random()*30 + 10,
-                (Math.random()-0.5)*CONFIG.rangeZ
-            );
-            randoms.push(Math.random(), Math.random(), Math.random());
-            lineIndices.push(-1.0); // -1 代表悬浮尘埃
-        }
-
-        geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
-        geometry.setAttribute('aRandom', new THREE.Float32BufferAttribute(randoms, 3));
-        geometry.setAttribute('aLine', new THREE.Float32BufferAttribute(lineIndices, 1));
-
-        // ================= 3. Shader (核心造型逻辑) =================
-        const vertexShader = `
-            uniform float uTime;
-            uniform float uScale; // 手势控制：山脉高度和河流湍急度
-
-            attribute vec3 aRandom;
-            attribute float aLine;
-
-            varying float vType; // 0=河流, 1=山脉, 2=黑色虚空, 3=悬浮尘埃
-            varying float vHeight;
-            varying float vIntensity;
-
-            // 柏林噪声函数
-            vec3 mod289(vec3 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
-            vec2 mod289(vec2 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
-            vec3 permute(vec3 x) { return mod289(((x*34.0)+1.0)*x); }
-            float snoise(vec2 v) {
-                const vec4 C = vec4(0.211324865405187, 0.366025403784439, -0.577350269189626, 0.024390243902439);
-                vec2 i  = floor(v + dot(v, C.yy) );
-                vec2 x0 = v - i + dot(i, C.xx);
-                vec2 i1; i1 = (x0.x > x0.y) ? vec2(1.0, 0.0) : vec2(0.0, 1.0);
-                vec4 x12 = x0.xyxy + C.xxzz; x12.xy -= i1;
-                i = mod289(i);
-                vec3 p = permute( permute( i.y + vec3(0.0, i1.y, 1.0 )) + i.x + vec3(0.0, i1.x, 1.0 ));
-                vec3 m = max(0.5 - vec3(dot(x0,x0), dot(x12.xy,x12.xy), dot(x12.zw,x12.zw)), 0.0);
-                m = m*m ; m = m*m ;
-                vec3 x = 2.0 * fract(p * C.www) - 1.0;
-                vec3 h = abs(x) - 0.5;
-                vec3 ox = floor(x + 0.5);
-                vec3 a0 = x - ox;
-                m *= 1.79284291400159 - 0.85373472095314 * ( a0*a0 + h*h );
-                vec3 g;
-                g.x  = a0.x  * x0.x  + h.x  * x0.y;
-                g.yz = a0.yz * x12.xz + h.yz * x12.yw;
-                return 130.0 * dot(m, g);
-            }
-
-            void main() {
-                vec3 pos = position;
-
-                // 处理悬浮尘埃
-                if (aLine < -0.5) {
-                    vType = 3.0;
-                    float t = uTime * 0.2 + aRandom.x * 10.0;
-                    pos.x += sin(t) * 5.0;
-                    pos.z += cos(t * 0.7) * 5.0;
-                    pos.y += sin(t * 1.5) * 2.0;
-                    vec4 mvPosition = modelViewMatrix * vec4(pos, 1.0);
-                    gl_Position = projectionMatrix * mvPosition;
-                    gl_PointSize = (2.0 + uScale * 2.0) * (30.0 / -mvPosition.z);
-                    return;
-                }
-
-                // === 核心地形逻辑 ===
-
-                // 1. 定义蜿蜒的河道曲线 (S形)
-                // 使用 noise 或 sin 组合来创建自然的弯曲
-                float riverCurve = sin(pos.z * 0.08) * 12.0 + sin(pos.z * 0.2) * 4.0;
-
-                // 2. 计算当前点距离河道中心的距离
-                float distToRiver = abs(pos.x - riverCurve);
-
-                // 3. 区域划分
-                // River Zone: 距离中心很近 (< 4.0)
-                // Void Zone (黑色留白): 距离中心中等 (4.0 ~ 12.0)
-                // Mountain Zone: 距离中心较远 (> 12.0)
-
-                float height = 0.0;
-                float pointSize = 0.0;
-
-                if (distToRiver < 3.5) {
-                    // --- 河流 ---
-                    vType = 0.0;
-                    // 河流是流动的，使用 uTime
-                    float flow = snoise(vec2(pos.x * 0.5, pos.z * 0.2 - uTime * 0.8));
-                    height = flow * 0.8;
-
-                    // 河流边缘渐隐
-                    pointSize = 3.0 * (1.0 - distToRiver / 3.5);
-                    // 增加一些随机闪烁
-                    vIntensity = 0.8 + 0.5 * sin(uTime * 5.0 + aRandom.x * 20.0);
-                }
-                else if (distToRiver < 10.0 + (1.0-uScale)*5.0) {
-                    // --- 黑色虚空 (留白) ---
-                    // 这里不显示粒子，制造强烈的对比
-                    vType = 2.0;
-                    pointSize = 0.0; // 隐藏
-                }
-                else {
-                    // --- 山脉 ---
-                    vType = 1.0;
-
-                    // 山脉起始距离偏移
-                    float mDist = distToRiver - 10.0;
-
-                    // 噪声采样：拉伸 X 和 Z 的比例来制造“层状”感
-                    float n1 = snoise(vec2(pos.x * 0.05, pos.z * 0.08));
-                    float n2 = snoise(vec2(pos.x * 0.15, pos.z * 0.15));
-
-                    // 山脉高度计算
-                    // 距离河越远，山越高 (mDist)
-                    // 叠加噪声
-                    height = (abs(n1) * 15.0 + n2 * 5.0) * (mDist * 0.08);
-
-                    // 限制最大高度，防止穿帮
-                    height = clamp(height, 0.0, 35.0);
-
-                    // 手势控制高度爆发
-                    height *= (0.6 + uScale * 1.5);
-
-                    // 粒子大小：山脊线处密集且大，低处小
-                    // 利用 height 决定大小
-                    pointSize = 1.5 + height * 0.08;
-
-                    // 为了让线条感更强，利用 aLine (行索引) 做一些剔除
-                    // 每隔几行显示得更亮/更大，模拟层积岩
-                    float linePattern = sin(aLine * 300.0);
-                    if (linePattern > 0.8) {
-                        pointSize *= 1.5;
-                        vIntensity = 1.5;
-                    } else {
-                        vIntensity = 0.8;
-                    }
-                }
-
-                pos.y = height;
-                vHeight = height;
-
-                vec4 mvPosition = modelViewMatrix * vec4(pos, 1.0);
-                gl_Position = projectionMatrix * mvPosition;
-
-                // 距离衰减
-                gl_PointSize = pointSize * (40.0 / -mvPosition.z);
-            }
-        `;
-
-        const fragmentShader = `
-            uniform vec3 uColorRiver;
-            uniform vec3 uColorMtBase;
-            uniform vec3 uColorMtTop;
-
-            varying float vType;
-            varying float vHeight;
-            varying float vIntensity;
-
-            void main() {
-                // 如果是虚空区域，直接丢弃像素
-                if (vType > 1.5 && vType < 2.5) discard;
-
-                // 粒子形状：圆形模糊
-                vec2 uv = gl_PointCoord.xy - 0.5;
-                float d = length(uv);
-                if (d > 0.5) discard;
-
-                // 边缘柔化
-                float alpha = 1.0 - smoothstep(0.2, 0.5, d);
-
-                vec3 color = vec3(0.0);
-
-                if (vType < 0.5) {
-                    // 河流：金色/橙色
-                    color = uColorRiver;
-                    // 中心更亮
-                    color += vec3(0.4, 0.4, 0.2);
-                } else if (vType > 2.5) {
-                    // 悬浮尘埃：白色
-                    color = vec3(1.0);
-                    alpha *= 0.5;
-                } else {
-                    // 山脉：根据高度渐变
-                    float hFactor = clamp(vHeight / 25.0, 0.0, 1.0);
-                    // 颜色从深蓝到亮青
-                    color = mix(uColorMtBase, uColorMtTop, hFactor);
-
-                    // 高亮部分 (山脊)
-                    color *= vIntensity;
-                    // 让最高的山峰带一点白色
-                    if (hFactor > 0.8) color += vec3(0.2);
-                }
-
-                gl_FragColor = vec4(color, alpha);
-            }
-        `;
-
-        const uniforms = {
-            uTime: { value: 0 },
-            uScale: { value: 0.0 }, // 初始平缓
-            uColorRiver: { value: CONFIG.colorRiver },
-            uColorMtBase: { value: CONFIG.colorMtBase },
-            uColorMtTop: { value: CONFIG.colorMtTop }
-        };
-
-        const material = new THREE.ShaderMaterial({
-            vertexShader, fragmentShader, uniforms,
-            transparent: true,
-            depthWrite: false, // 粒子不需要写入深度，防止遮挡问题
-            blending: THREE.AdditiveBlending // 叠加模式，越密越亮
+        window.addEventListener('load', () => {
+            const svgLine = document.getElementById('glowing-line');
+            const length = Math.hypot(0.85 * window.innerWidth - 0.18 * window.innerWidth, window.innerHeight);
+            svgLine.style.strokeDasharray = length; svgLine.style.strokeDashoffset = length;
         });
 
-        const particleSystem = new THREE.Points(geometry, material);
-        scene.add(particleSystem);
+        function triggerSplit() {
+            if (hasTriggeredSplit) return;
+            hasTriggeredSplit = true;
 
-        // ================= 4. 动画循环 =================
-        const clock = new THREE.Clock();
-        let targetScale = 0.2;
-        let currentScale = 0.2;
-        let isHandActive = false;
-        let handLostFrames = 0;
+            const splitScreen = document.getElementById('split-screen');
+            splitScreen.classList.add('screen-shake');
+            splitScreen.classList.add('drawing-laser');
+
+            setTimeout(() => {
+                document.getElementById('flashbang').classList.add('trigger-flash');
+                splitScreen.classList.remove('screen-shake');
+                splitScreen.classList.add('split-open');
+
+                // 【核心效果】：触发文字粒子从切割线中“迸发”！
+                textParticles.forEach(p => p.state = 1);
+
+                setTimeout(() => { document.getElementById('intro-ui').classList.add('show-ui'); }, 500);
+            }, 600);
+        }
+
+        // 跳转时：文字沿着胡焕庸线被“撕裂”
+        function warpToEarth() {
+            if (isTransitioningToEarth) return;
+            isTransitioningToEarth = true;
+
+            document.getElementById('sys-msg').innerText = "【 跃迁协议启动... 】";
+            document.getElementById('intro-ui').classList.remove('show-ui');
+            document.getElementById('vision-sensor').style.opacity = 0;
+            document.getElementById('global-cursor').style.opacity = 0;
+
+            // 粒子沿胡焕庸线撕裂（东南向右下飞，西北向左上飞）
+            textParticles.forEach(p => {
+                p.state = 2; // 进入撕裂态
+                let forceX = p.isSE ? 1 : -1;
+                let forceY = p.isSE ? 0.67 : -0.67; // 垂直于切割线的方向
+                p.vx = forceX * (Math.random() * 30 + 15);
+                p.vy = forceY * (Math.random() * 30 + 15);
+            });
+
+            // 屏幕彻底爆白
+            setTimeout(() => {
+                 document.getElementById('flashbang').classList.remove('trigger-flash');
+                 document.getElementById('flashbang').classList.add('fade-out-flash');
+            }, 400);
+
+            setTimeout(() => {
+                if (window.parent !== window) {
+                    window.parent.postMessage({ type: 'SCENE_TRANSITION', target: 'earth', scene: 'earth' }, '*');
+                    try {
+                        const earthBtn = window.parent.document.querySelector('.chapter-btn[data-scene="earth"]');
+                        if (earthBtn) earthBtn.click();
+                    } catch(e) {}
+                } else { window.location.href = 'earth.html'; }
+            }, 1500);
+        }
+
+        // ==========================================
+        // 粒子与地形系统 (增加色彩劈开和诞生动画)
+        // ==========================================
+        const canvas = document.getElementById('main-canvas');
+        const ctx = canvas.getContext('2d', { willReadFrequently: true });
+        let width = canvas.width = window.innerWidth;
+        let height = canvas.height = window.innerHeight;
+
+        const textParticles = []; const bgStars = []; let timeTick = 0;
+        const mouse = { x: -999, y: -999, radius: 150 };
+        let targetHandPower = 0; let currentHandPower = 0;
+        let hhLine = { x1: width * 0.75, y1: height * 0.15, x2: width * 0.28, y2: height * 0.85 };
+
+        function isSouthEast(x, y) { return ((hhLine.x2 - hhLine.x1) * (y - hhLine.y1) - (hhLine.y2 - hhLine.y1) * (x - hhLine.x1)) > 0; }
+
+        window.addEventListener('mousemove', (e) => {
+            if(targetHandPower === 0 && !isTransitioningToEarth) {
+                mouse.x = e.x; mouse.y = e.y;
+                const cursor = document.getElementById('global-cursor');
+                cursor.style.left = e.x + 'px'; cursor.style.top = e.y + 'px';
+                cursor.classList.add('tracking');
+            }
+        });
+        window.addEventListener('mouseleave', () => {
+            if(targetHandPower === 0) { mouse.x = -999; document.getElementById('global-cursor').classList.remove('tracking'); }
+        });
+        window.addEventListener('resize', () => {
+            width = canvas.width = window.innerWidth; height = canvas.height = window.innerHeight;
+            hhLine = { x1: width * 0.75, y1: height * 0.15, x2: width * 0.28, y2: height * 0.85 };
+            initSystem();
+            const svgLine = document.getElementById('glowing-line');
+            const length = Math.hypot(0.85 * width - 0.18 * width, height);
+            if(svgLine) { svgLine.style.strokeDasharray = length; if(!hasTriggeredSplit) svgLine.style.strokeDashoffset = length; }
+        });
+
+        class BgStar {
+            constructor() {
+                this.isSE = Math.random() < 0.94;
+                let rx, ry; do { rx = Math.random() * width; ry = Math.random() * height; } while (isSouthEast(rx, ry) !== this.isSE);
+                this.x = rx; this.y = ry;
+                if (this.isSE) {
+                    this.vx = (Math.random() - 0.5) * 0.5; this.vy = (Math.random() - 0.5) * 0.5;
+                    this.radius = Math.random() * 1.5 + 0.5; this.color = `rgba(212, 175, 55, ${Math.random() * 0.5 + 0.2})`;
+                } else {
+                    this.vx = (Math.random() - 0.5) * 0.1; this.vy = (Math.random() - 0.5) * 0.1;
+                    this.radius = Math.random() * 1.0 + 0.3; this.color = `rgba(0, 255, 204, ${Math.random() * 0.4 + 0.1})`;
+                }
+            }
+            update() {
+                this.x += this.vx; this.y += this.vy;
+                if (this.x < 0 || this.x > width) this.vx *= -1;
+                if (this.y < 0 || this.y > height) this.vy *= -1;
+                if (isSouthEast(this.x, this.y) !== this.isSE) { this.vx *= -1; this.vy *= -1; this.x += this.vx * 2; this.y += this.vy * 2; }
+            }
+            draw() { ctx.beginPath(); ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2); ctx.fillStyle = this.color; ctx.fill(); }
+        }
+
+        class TextParticle {
+            constructor(targetX, targetY) {
+                this.targetX = targetX; this.targetY = targetY;
+                this.isSE = isSouthEast(targetX, targetY);
+
+                // 【核心变化1：色彩劈开】文字在不同区域拥有不同颜色
+                if (this.isSE) {
+                    this.baseColor = Math.random() > 0.4 ? '#d4af37' : '#ffffff'; // 东南金白
+                } else {
+                    this.baseColor = Math.random() > 0.4 ? '#00ffcc' : '#ffffff'; // 西北青白
+                }
+                this.color = this.baseColor;
+
+                // 【核心变化2：诞生坐标】计算粒子到胡焕庸线的垂直投影点，粒子从线内诞生！
+                let ax = width * 0.85, ay = 0, bx = width * 0.18, by = height;
+                let abx = bx - ax, aby = by - ay;
+                let apx = targetX - ax, apy = targetY - ay;
+                let t = (apx * abx + apy * aby) / (abx * abx + aby * aby);
+                t = Math.max(0, Math.min(1, t));
+
+                this.startX = ax + t * abx;
+                this.startY = ay + t * aby;
+
+                this.x = this.startX;
+                this.y = this.startY;
+
+                this.vx = 0; this.vy = 0;
+                this.friction = 0.88 + Math.random() * 0.04;
+                this.spring = 0.02 + Math.random() * 0.02;
+                this.baseRadius = Math.random() > 0.8 ? 2.0 : 1.2;
+                this.radius = 0;
+
+                this.state = 0; // 0=潜伏在线内, 1=汇聚成字, 2=跃迁撕裂
+            }
+            update() {
+                if (this.state === 0) {
+                    this.x = this.startX; this.y = this.startY; this.radius = 0;
+                } else if (this.state === 1) {
+                    this.radius = this.baseRadius;
+                    let dx = this.targetX - this.x; let dy = this.targetY - this.y;
+                    let distMouse = Math.hypot(mouse.x - this.x, mouse.y - this.y);
+                    let repulseRad = mouse.radius * (1 + currentHandPower * 0.8);
+
+                    if (distMouse < repulseRad && hasTriggeredSplit) {
+                        let force = (repulseRad - distMouse) / repulseRad;
+                        this.vx -= (mouse.x - this.x) / distMouse * force * 10;
+                        this.vy -= (mouse.y - this.y) / distMouse * force * 10;
+                        this.color = this.isSE ? "#ff5500" : "#00ffff"; // 被排斥时发高光
+                    } else { this.color = this.baseColor; }
+
+                    this.vx += dx * this.spring; this.vy += dy * this.spring;
+                    this.vx *= this.friction; this.vy *= this.friction;
+                    this.x += this.vx; this.y += this.vy;
+                } else if (this.state === 2) {
+                    // 跃迁撕裂，直线飞离
+                    this.x += this.vx; this.y += this.vy;
+                    this.radius *= 0.98; // 逐渐消散
+                }
+            }
+            draw() {
+                if (this.radius > 0) {
+                    ctx.beginPath(); ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                    ctx.fillStyle = this.color; ctx.fill();
+                }
+            }
+        }
+
+        function initSystem() {
+            textParticles.length = 0;
+            const offscreen = document.createElement('canvas');
+            const offCtx = offscreen.getContext('2d', { willReadFrequently: true });
+            offscreen.width = width; offscreen.height = height;
+
+            const text = "指间山河界";
+            let fontSize = Math.min(width / text.length, 180);
+            offCtx.font = `${fontSize}px "STXingkai", "Xingkai SC", "HuaTianXingkai", "KaiTi", serif`;
+            offCtx.fillStyle = "white"; offCtx.textAlign = "center"; offCtx.textBaseline = "middle";
+            offCtx.fillText(text, width / 2, height / 2.5);
+
+            const imageData = offCtx.getImageData(0, 0, width, height).data;
+            for (let y = 0; y < height; y += 5) {
+                for (let x = 0; y < height && x < width; x += 5) {
+                    if (imageData[(y * width + x) * 4 + 3] > 128) textParticles.push(new TextParticle(x, y));
+                }
+            }
+            bgStars.length = 0;
+            for (let i = 0; i < Math.floor((width * height) / 5000); i++) bgStars.push(new BgStar());
+        }
+
+        function drawHolographicLandscape() {
+            ctx.save();
+            for (let i = 3; i >= 0; i--) {
+                ctx.beginPath();
+                let baseY = height * 0.65 + i * 40;
+                let baseAmp = 120 - i * 20; let amp = baseAmp * (1 + currentHandPower * 2.5);
+                let offset = timeTick * (0.05 + i * 0.03);
+                for (let x = 0; x <= width; x += 5) {
+                    let y1 = Math.sin(x * 0.0025 + offset) * amp;
+                    let y2 = Math.sin(x * 0.006 - offset * 1.2) * (amp * 0.4);
+                    let y3 = Math.cos(x * 0.013 + offset * 0.8) * (amp * 0.2);
+                    let finalY = baseY + y1 + y2 + y3;
+                    if (x === 0) ctx.moveTo(x, finalY); else ctx.lineTo(x, finalY);
+                }
+                let grad = ctx.createLinearGradient(0, baseY - amp - 100, 0, baseY + amp);
+                grad.addColorStop(0, `rgba(0, 255, 204, ${0.8 - i * 0.15})`); grad.addColorStop(1, `rgba(0, 255, 204, 0.0)`);
+                ctx.strokeStyle = grad; ctx.lineWidth = 1.5; ctx.stroke();
+                ctx.lineTo(width, height); ctx.lineTo(0, height);
+                ctx.fillStyle = `rgba(4, 6, 9, ${0.6 - i * 0.1})`; ctx.fill();
+            }
+            let riverBaseY = height * 0.85;
+            for(let r = 0; r < 5; r++) {
+                ctx.beginPath();
+                let waveSpeed = timeTick * (0.8 + r * 0.15 + currentHandPower * 2);
+                for (let x = 0; x <= width; x += 10) {
+                    let waveAmp = (15 + r * 3) * (1 + currentHandPower * 1.5);
+                    let wave = Math.sin(x * 0.005 - waveSpeed) * waveAmp;
+                    let y = riverBaseY + r * 18 + wave;
+                    if (x === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+                }
+                ctx.strokeStyle = `rgba(212, 175, 55, ${0.6 - r * 0.1})`;
+                ctx.lineWidth = 2; ctx.shadowBlur = 10; ctx.shadowColor = "rgba(212, 175, 55, 0.8)";
+                ctx.stroke(); ctx.shadowBlur = 0;
+            }
+            ctx.restore();
+        }
 
         function animate() {
             requestAnimationFrame(animate);
-            const t = clock.getElapsedTime();
+            timeTick = performance.now() / 1000;
+            currentHandPower += (targetHandPower - currentHandPower) * 0.1;
 
-            // 手势平滑处理
-            if (!isHandActive) {
-                handLostFrames++;
-                if (handLostFrames > 20) {
-                    targetScale = 0.2 + Math.sin(t * 0.5) * 0.1; // 待机呼吸
+            let bgGrad = ctx.createRadialGradient(width/2, height/2, 0, width/2, height/2, width);
+            bgGrad.addColorStop(0, '#0f1722'); bgGrad.addColorStop(1, '#020408');
+            ctx.fillStyle = bgGrad; ctx.fillRect(0, 0, width, height);
+
+            drawHolographicLandscape();
+            ctx.lineWidth = 0.5;
+            for (let i = 0; i < bgStars.length; i++) {
+                bgStars[i].update(); bgStars[i].draw();
+                if (bgStars[i].isSE && hasTriggeredSplit) {
+                    for (let j = i + 1; j < bgStars.length; j++) {
+                        if (bgStars[j].isSE) {
+                            let dist = Math.hypot(bgStars[i].x - bgStars[j].x, bgStars[i].y - bgStars[j].y);
+                            if (dist < 60) {
+                                ctx.beginPath(); ctx.strokeStyle = `rgba(212, 175, 55, ${0.15 * (1 - dist / 60)})`;
+                                ctx.moveTo(bgStars[i].x, bgStars[i].y); ctx.lineTo(bgStars[j].x, bgStars[j].y); ctx.stroke();
+                            }
+                        }
+                    }
                 }
-            } else {
-                handLostFrames = 0;
             }
+            textParticles.forEach(p => { p.update(); p.draw(); });
 
-            // 缓动
-            currentScale += (targetScale - currentScale) * 0.05;
+            // 处理捏合长按逻辑 (蓄能跃迁)
+            if (hasTriggeredSplit && !isTransitioningToEarth) {
+                if (targetHandPower > 0.8) {
+                    pinchHoldProgress += 0.02;
+                    document.getElementById('sys-msg').innerText = "【 跃迁能量蓄积中... 保持捏合 】";
+                    document.getElementById('sys-msg').style.color = "#ff5500";
+                    if (pinchHoldProgress >= 1) warpToEarth();
+                } else {
+                    pinchHoldProgress = Math.max(0, pinchHoldProgress - 0.05);
+                    document.getElementById('sys-msg').innerText = "【 指令：单指拨墨 / 双指起山 / 持续捏合进入系统 】";
+                    document.getElementById('sys-msg').style.color = "#00ffcc";
+                }
 
-            uniforms.uTime.value = t;
-            uniforms.uScale.value = currentScale;
-
-            // 缓慢向前推进的效果 (移动相机)
-            // 实际上我们可以移动 geometry 或者 offset，这里简单移动相机 z
-            // 为了无限循环，通常是在 shader 里做 offset，这里简化处理：仅轻微摆动
-            scene.rotation.y = Math.sin(t * 0.05) * 0.02;
-
-            renderer.render(scene, camera);
+                if (pinchHoldProgress > 0 && mouse.x !== -999) {
+                    ctx.save();
+                    ctx.beginPath();
+                    ctx.arc(mouse.x, mouse.y, 40, -Math.PI/2, -Math.PI/2 + pinchHoldProgress * Math.PI * 2);
+                    ctx.strokeStyle = "#ff5500"; ctx.lineWidth = 6;
+                    ctx.shadowBlur = 15; ctx.shadowColor = "#ff5500";
+                    ctx.stroke();
+                    ctx.restore();
+                }
+            }
         }
+
+        initSystem();
         animate();
 
-        // ================= 5. UI 事件 =================
-        document.getElementById('fs-btn').addEventListener('click', () => {
-             if (!document.fullscreenElement) document.documentElement.requestFullscreen();
-             else document.exitFullscreen();
-        });
+        // ==========================================
+        // MediaPipe 手势检测
+        // ==========================================
+        const vSrc = document.getElementById('feed-src');
+        const vLayer = document.getElementById('overlay-layer');
+        const vCtx = vLayer.getContext('2d');
+        const globalCursor = document.getElementById('global-cursor');
 
-        // ================= 6. MediaPipe 集成 =================
-        const videoElement = document.getElementById('cam-video');
-        const canvasElement = document.getElementById('output-canvas');
-        const canvasCtx = canvasElement.getContext('2d');
-        const statusText = document.getElementById('status-text');
+        let swipeHistory = [];
 
-        function resizeCanvas() {
-            canvasElement.width = videoElement.videoWidth || 160;
-            canvasElement.height = videoElement.videoHeight || 120;
-        }
+        function resizeOverlay() { vLayer.width = vSrc.videoWidth || 140; vLayer.height = vSrc.videoHeight || 140; }
 
-        function onResults(results) {
-            canvasCtx.save();
-            canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+        const tracker = new Hands({locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`});
+        tracker.setOptions({ maxNumHands: 1, modelComplexity: 0, minDetectionConfidence: 0.5, minTrackingConfidence: 0.5 });
 
-            if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
-                isHandActive = true;
-                statusText.innerText = "手势控制中 (张开幅度控制山高)";
+        tracker.onResults((res) => {
+            vCtx.clearRect(0, 0, vLayer.width, vLayer.height);
 
-                for (const landmarks of results.multiHandLandmarks) {
-                    drawConnectors(canvasCtx, landmarks, HAND_CONNECTIONS, {color: 'rgba(1,75,61,0.97)', lineWidth: 2});
-                    drawLandmarks(canvasCtx, landmarks, {color: '#0059ff', lineWidth: 1});
+            if (res.multiHandLandmarks && res.multiHandLandmarks.length > 0) {
+                const lm = res.multiHandLandmarks[0];
+                drawConnectors(vCtx, lm, HAND_CONNECTIONS, {color: 'rgba(0, 255, 204,0.5)', lineWidth: 1});
+                drawLandmarks(vCtx, lm, {color: '#00ffcc', lineWidth: 0, radius: 2});
 
-                    // 计算手掌张开程度
-                    const wrist = landmarks[0];
-                    const middleTip = landmarks[12];
-                    const distance = Math.sqrt(Math.pow(wrist.x - middleTip.x, 2) + Math.pow(wrist.y - middleTip.y, 2));
+                const indexTip = lm[8];
+                mouse.x = (1 - indexTip.x) * width; mouse.y = indexTip.y * height;
+                globalCursor.style.left = mouse.x + 'px';
+                globalCursor.style.top = mouse.y + 'px';
+                globalCursor.classList.add('tracking');
 
-                    // 映射到 0.0 ~ 1.0
-                    let val = (distance - 0.15) * 3.0;
-                    targetScale = Math.max(0.0, Math.min(1.2, val));
+                const thumbTip = lm[4];
+                const pinchDist = Math.hypot(thumbTip.x - indexTip.x, thumbTip.y - indexTip.y);
+                let mappedPower = (pinchDist - 0.03) * 6.0;
+                targetHandPower = Math.max(0.0, Math.min(1.0, mappedPower));
+
+                // 劈开检测
+                if (!hasTriggeredSplit) {
+                    document.getElementById('split-prompt').innerHTML = "SYSTEM LOCKED<br><span style='font-size:16px; color:#00ffcc; font-weight:normal;'>【 已锁定：请快速挥动手臂劈开结界 】</span>";
+                    swipeHistory.push({x: mouse.x, y: mouse.y});
+                    if (swipeHistory.length > 8) swipeHistory.shift();
+
+                    if (swipeHistory.length === 8) {
+                        let distance = Math.hypot(swipeHistory[7].x - swipeHistory[0].x, swipeHistory[7].y - swipeHistory[0].y);
+                        if (distance > width * 0.20) triggerSplit();
+                    }
                 }
             } else {
-                isHandActive = false;
-                statusText.innerText = "请将手放入镜头区域";
+                targetHandPower = 0; mouse.x = -999; swipeHistory = [];
+                globalCursor.classList.remove('tracking');
+                if (!hasTriggeredSplit) {
+                    document.getElementById('split-prompt').innerHTML = "SYSTEM LOCKED<br><span style='font-size:16px; color:#aaa; font-weight:normal;'>凌空挥斩 · 激活结界</span>";
+                }
             }
-            canvasCtx.restore();
-        }
-
-        const hands = new Hands({locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`});
-        hands.setOptions({
-            maxNumHands: 1,
-            modelComplexity: 0, // 降低模型复杂度以提升性能，因为粒子系统很重
-            minDetectionConfidence: 0.5,
-            minTrackingConfidence: 0.5
         });
-        hands.onResults(onResults);
 
-        const cameraUtils = new Camera(videoElement, {
+        const vCap = new Camera(vSrc, {
             onFrame: async () => {
-                if(canvasElement.width !== videoElement.videoWidth) resizeCanvas();
-                await hands.send({image: videoElement});
+                if(vLayer.width !== vSrc.videoWidth) resizeOverlay();
+                await tracker.send({image: vSrc});
             },
-            width: 320,
-            height: 240
+            width: 256, height: 256
         });
 
-        cameraUtils.start().then(() => statusText.innerText = "系统就绪").catch(e => statusText.innerText = "摄像头未授权");
-
-        window.addEventListener('resize', () => {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
+        vCap.start().catch(() => {
+            if(!hasTriggeredSplit) document.getElementById('split-prompt').innerHTML = "SYSTEM ERROR<br><span style='font-size:16px; color:#ff5500; font-weight:normal;'>【 未能获取视觉权限，请点击屏幕强行开启 】</span>";
+            document.getElementById('split-screen').addEventListener('click', triggerSplit);
+            document.getElementById('split-screen').style.cursor = 'pointer';
         });
     </script>
 </body>

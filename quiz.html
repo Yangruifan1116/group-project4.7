@@ -4,38 +4,38 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>选择练习模式 - 数字胡焕庸线</title>
-    <link rel="stylesheet" href="./css/quiz.css" />
+   <link rel="stylesheet" href="./assets/css/quiz.css" />
 </head>
 <body>
     <div class="quiz-container">
         <button class="back-btn" id="backBtn">← 返回主页</button>
-        
+
         <div class="quiz-overlay">
             <!-- 模式选择页面 -->
             <div id="modeSelection" class="mode-selection">
                 <h1 class="mode-title">📚 选择练习模式</h1>
                 <p class="mode-subtitle">请选择您想要进行的练习类型</p>
-                
+
                 <div class="mode-options">
                     <div class="mode-card" data-mode="new">
                         <div class="mode-icon">🆕</div>
                         <h3 class="mode-name">新题练习</h3>
                         <p class="mode-desc">从题库中随机抽取题目进行练习，巩固所学知识。</p>
                     </div>
-                    
+
                     <div class="mode-card" data-mode="wrong">
                         <div class="mode-icon">📖</div>
                         <h3 class="mode-name">错题巩固</h3>
                         <p class="mode-desc">重新练习之前做错的题目，查漏补缺。</p>
                     </div>
-                    
+
                     <div class="mode-card" data-mode="all">
                         <div class="mode-icon">📝</div>
                         <h3 class="mode-name">全部题目</h3>
                         <p class="mode-desc">完整练习所有题目，全面测试学习效果。</p>
                     </div>
                 </div>
-                
+
                 <!-- 用户统计信息 -->
                 <div style="margin-top: 40px; padding: 20px; background: rgba(255,255,255,0.05); border-radius: 12px; max-width: 600px; margin-left: auto; margin-right: auto;">
                     <h3 style="color: var(--quiz-accent); margin-bottom: 16px;">📊 我的学习统计</h3>
@@ -59,7 +59,7 @@
                     </div>
                 </div>
             </div>
-            
+
             <!-- 答题页面 -->
             <div id="quizPanel" class="quiz-panel" style="display: none;">
                 <div class="quiz-header">
@@ -75,16 +75,16 @@
                         <div>当前得分：<strong id="currentScore">0</strong></div>
                     </div>
                 </div>
-                
+
                 <div class="question-area">
                     <div class="question-number" id="questionNumber">第 1 题</div>
                     <h3 class="question-text" id="questionText">题目内容加载中...</h3>
-                    
+
                     <div class="options-list" id="optionsList">
                         <!-- 选项将动态生成 -->
                     </div>
                 </div>
-                
+
                 <div class="feedback-area" id="feedbackArea">
                     <div class="feedback-title" id="feedbackTitle">
                         <span class="feedback-icon" id="feedbackIcon"></span>
@@ -92,18 +92,18 @@
                     </div>
                     <p class="feedback-explanation" id="feedbackExplanation"></p>
                 </div>
-                
+
                 <div class="quiz-footer">
                     <button class="btn-secondary" id="skipBtn" disabled>跳过</button>
                     <button class="btn-primary" id="nextBtn" style="display: none;" disabled>下一题</button>
                 </div>
             </div>
-            
+
             <!-- 结果页面 -->
             <div id="resultPanel" class="result-panel" style="display: none;">
                 <div class="result-icon">🎉</div>
                 <h2 class="result-title">练习完成！</h2>
-                
+
                 <div class="result-stats">
                     <div class="stat-item">
                         <div class="stat-value" id="resultTotal">0</div>
@@ -118,12 +118,12 @@
                         <div class="stat-label">错误</div>
                     </div>
                 </div>
-                
+
                 <div style="margin: 24px 0;">
                     <div style="font-size: 18px; color: var(--quiz-muted); margin-bottom: 8px;">准确率</div>
                     <div style="font-size: 48px; font-weight: bold; color: var(--quiz-accent);" id="resultAccuracy">0%</div>
                 </div>
-                
+
                 <div class="result-actions">
                     <button class="btn-primary btn-large" id="retryBtn">再做一次</button>
                     <button class="btn-secondary btn-large" id="homeBtn">返回首页</button>
@@ -131,654 +131,530 @@
             </div>
         </div>
     </div>
-    
+
     <!-- 手势光标层 -->
     <canvas id="gestureCanvas" style="position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:9998;"></canvas>
-    
+
     <!-- MediaPipe 库 -->
    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
-   <script
-  src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"
-  crossorigin="anonymous"
-   ></script>
-   <script
-  src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"
-  crossorigin="anonymous"
-   ></script>
-    
-    <script src="./js/user-manager.js"></script>
-    <script src="./js/quiz-manager.js"></script>
-    <script src="./js/audio-manager.js"></script>
-    <script src="./js/global-hand-tracker.js"></script>
+   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
+   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+
+    <script src="./js/core/user-manager.js"></script>
+    <script src="./js/pages/quiz-manager.js"></script>
+    <script src="./js/core/audio-manager.js"></script>
+    <script src="./js/core/global-hand-tracker.js"></script>
+
     <script>
+    // --- 变量定义 ---
     const modeSelection = document.getElementById('modeSelection');
     const quizPanel = document.getElementById('quizPanel');
     const resultPanel = document.getElementById('resultPanel');
     const backBtn = document.getElementById('backBtn');
     const modeCards = document.querySelectorAll('.mode-card');
-    
+
     // 画布相关
-   const gestureCanvas = document.getElementById('gestureCanvas');
-   const ctx = gestureCanvas.getContext('2d');
-   
-  let currentMode = 'new';
-       let selectedOption = null;
-       let score = 0;
-       let handSelectEnabled = false; // 是否启用手势选择
-       
-        // 检查登录状态
-       window.addEventListener('DOMContentLoaded', () => {
-           if (!window.userManager.isLoggedIn()) {
-               window.location.href = 'login.html';
-               return;
-           }
-           
-           // 加载用户统计
-           loadUserStats();
-           
-           // 初始化手势追踪
-           initHandTracking();
-       });
-       
-       // 初始化手势追踪
-      function initHandTracking() {
-         if (window.globalHandTracker) {
-            // 设置画布大小
-           resizeCanvas();
-           window.addEventListener('resize', resizeCanvas);
-           
-           window.globalHandTracker.addListener((state) => {
-              handleGesture(state);
-              drawGestureCursor(state); // 绘制手势光标
-          });
-          
-       console.log('✅ 答题页面手势追踪已启动');
-       
-           // 启动摄像头
-          startCamera();
-         }
-     }
-     
-     // 启动摄像头
+    const gestureCanvas = document.getElementById('gestureCanvas');
+    const ctx = gestureCanvas.getContext('2d');
+
+    let currentMode = 'new';
+    let selectedOption = null; // 0, 1, 2, 3
+    let score = 0;
+    let handSelectEnabled = false;
+
+    // --- 手势确认变量 ---
+    let lastDetectedFingerCount = -1;
+    let detectionStartTime = 0;
+    const REQUIRED_HOLD_TIME = 800; // 0.8秒确认
+    let isHolding = false;
+
+    // 🔥 新增：下一题锁定开关 (防止选完1立刻识别成拳头)
+    let isNextQuestionLocked = false;
+
+    // 检查登录状态
+    window.addEventListener('DOMContentLoaded', () => {
+        if (!window.userManager.isLoggedIn()) {
+            window.location.href = 'login.html';
+            return;
+        }
+        loadUserStats();
+        initHandTracking();
+    });
+
+    // 初始化手势追踪
+    function initHandTracking() {
+        if (window.globalHandTracker) {
+            resizeCanvas();
+            window.addEventListener('resize', resizeCanvas);
+
+            window.globalHandTracker.addListener((state) => {
+                // 🔴 调试检查：如果没有收到骨架数据，在控制台报错
+                if (state.isTracking && !state.landmarks) {
+                    console.warn("⚠️ 警告：未收到 landmarks 数据，请检查 global-hand-tracker.js");
+                    // 仅在画布上显示一次警告
+                    if (Math.random() < 0.05) drawDebugError();
+                    return;
+                }
+
+                handleGesture(state);
+                drawGestureFeedback(state);
+            });
+            startCamera();
+        }
+    }
+
+    function drawDebugError() {
+        ctx.save();
+        ctx.fillStyle = "red";
+        ctx.font = "20px Arial";
+        ctx.fillText("❌ 错误: JS文件未传递骨架数据", 20, 50);
+        ctx.restore();
+    }
+
+    // 启动摄像头
     async function startCamera() {
         try {
-          // 检查是否已经有摄像头在运行
-         if (window.globalHandTracker && window.globalHandTracker.state.isTracking) {
-       console.log('✅ 摄像头已在运行，无需重复启动');
-            return;
-         }
-         
-         // 创建视频元素（隐藏）
-       let videoElement = document.getElementById('handTrackingVideo');
-         if (!videoElement) {
-         videoElement = document.createElement('video');
-           videoElement.id= 'handTrackingVideo';
-           videoElement.style.cssText = `
-              position: fixed;
-              bottom: 10px;
-              right: 10px;
-              width: 160px;
-              height: 120px;
-              border-radius: 8px;
-              border: 2px solid var(--quiz-accent);
-              opacity: 0.7;
-              z-index: 999;
-              transform: scaleX(-1); // 镜像显示
-          `;
-           videoElement.setAttribute('autoplay', 'true');
-           videoElement.setAttribute('playsinline', 'true');
-           document.body.appendChild(videoElement);
-           
-          // 添加提示
-    const hint = document.createElement('div');
-           hint.style.cssText = `
-              position: fixed;
-              bottom: 135px;
-              right: 10px;
-              background: rgba(80, 227, 194, 0.2);
-        color: var(--quiz-accent);
-              padding: 6px 12px;
-              border-radius: 6px;
-              font-size: 12px;
-              z-index: 999;
-          `;
-           hint.textContent = '📹 摄像头';
-           document.body.appendChild(hint);
-      }
-      
-      // 启动手势追踪器的摄像头（global-hand-tracker.js 会自动处理清理）
-  console.log('🎥 正在启动摄像头...');
-      await window.globalHandTracker.startCamera(videoElement);
-console.log('✅ 摄像头已启动');
-  } catch (error) {
- console.error('❌ 摄像头启动失败:', error);
-     showCameraError(error);
-  }
-}
+            if (window.globalHandTracker && window.globalHandTracker.state.isTracking) return;
 
-    // 显示摄像头错误提示
-    function showCameraError(error) {
-     const errorMsg = document.createElement('div');
-        errorMsg.style.cssText = `
-           position: fixed;
-           top: 20px;
-           left: 50%;
-           transform: translateX(-50%);
-           background: rgba(255, 95, 109, 0.9);
-         color: white;
-           padding: 16px 24px;
-           border-radius: 8px;
-           font-size: 14px;
-           z-index: 10000;
-           text-align: center;
-       `;
-       errorMsg.innerHTML = `
-           <strong>⚠️ 摄像头启动失败</strong><br>
-           <small>${error.message}</small><br>
-           <small style="margin-top: 8px; display: block;">请允许摄像头权限后刷新页面</small>
-       `;
-       document.body.appendChild(errorMsg);
-       
-       // 5 秒后自动移除
-       setTimeout(() => {
-           if (errorMsg.parentNode) {
-               errorMsg.remove();
-           }
-       }, 5000);
+            let videoElement = document.getElementById('handTrackingVideo');
+            if (!videoElement) {
+                videoElement = document.createElement('video');
+                videoElement.id= 'handTrackingVideo';
+                videoElement.style.cssText = `
+                    position: fixed; bottom: 10px; right: 10px; width: 160px; height: 120px;
+                    border-radius: 8px; border: 2px solid var(--quiz-accent); opacity: 0.7;
+                    z-index: 999; transform: scaleX(-1);
+                `;
+                videoElement.setAttribute('autoplay', 'true');
+                videoElement.setAttribute('playsinline', 'true');
+                document.body.appendChild(videoElement);
+            }
+            await window.globalHandTracker.startCamera(videoElement);
+        } catch (error) {
+            console.error('❌ 摄像头启动失败:', error);
+        }
     }
 
-    // 调整画布大小
-   function resizeCanvas() {
-      gestureCanvas.width = window.innerWidth;
-     gestureCanvas.height = window.innerHeight;
-   }
-   
-   // 绘制手势光标
-   function drawGestureCursor(state) {
-      // 清空画布
-     ctx.clearRect(0, 0, gestureCanvas.width, gestureCanvas.height);
-     
-     if (!state.isTracking || !state.handPosition) return;
-     
-   const x = state.handPosition.x * gestureCanvas.width;
-   const y = state.handPosition.y * gestureCanvas.height;
-    
-     // 根据手势类型绘制不同的光标
-   const gesture = state.currentGesture;
-    
-    if (gesture === 'pinch') {
-       // 捏合手势 - 绘制点击效果（同心圆）
-      ctx.beginPath();
-       ctx.arc(x, y, 20, 0, Math.PI * 2);
-       ctx.fillStyle = `rgba(80, 227, 194, ${state.pinchStrength})`;
-       ctx.fill();
-       
-      ctx.beginPath();
-       ctx.arc(x, y, 15, 0, Math.PI * 2);
-       ctx.strokeStyle = '#50e3c2';
-       ctx.lineWidth = 3;
-       ctx.stroke();
-       
-      // 绘制食指指尖点
-      ctx.beginPath();
-       ctx.arc(x, y, 8, 0, Math.PI * 2);
-       ctx.fillStyle = '#ffffff';
-       ctx.fill();
-       
-    } else if (gesture === 'open_palm') {
-       // 张开手掌 - 绘制移动光标（箭头）
-      ctx.save();
-      ctx.translate(x, y);
-      
-      // 绘制箭头
-      ctx.beginPath();
-       ctx.moveTo(0, -25);
-      ctx.lineTo(15, 10);
-      ctx.lineTo(0, 5);
-      ctx.lineTo(-15, 10);
-      ctx.closePath();
-      
-      ctx.fillStyle = 'rgba(80, 227, 194, 0.8)';
-      ctx.fill();
-      ctx.strokeStyle = '#50e3c2';
-      ctx.lineWidth = 2;
-      ctx.stroke();
-      
-      ctx.restore();
-      
-    } else if (gesture === 'fist') {
-       // 握拳 - 绘制确认效果（对勾）
-      ctx.save();
-      ctx.translate(x, y);
-      
-      // 绘制圆形背景
-      ctx.beginPath();
-       ctx.arc(0, 0, 30, 0, Math.PI * 2);
-      ctx.fillStyle = 'rgba(76, 175, 80, 0.3)';
-      ctx.fill();
-      ctx.strokeStyle = '#4caf50';
-      ctx.lineWidth = 3;
-      ctx.stroke();
-      
-      // 绘制对勾
-      ctx.beginPath();
-       ctx.moveTo(-15, 0);
-      ctx.lineTo(-5, 10);
-      ctx.lineTo(15, -10);
-      ctx.strokeStyle = '#4caf50';
-      ctx.lineWidth = 4;
-      ctx.lineCap = 'round';
-      ctx.lineJoin = 'round';
-      ctx.stroke();
-      
-      ctx.restore();
-      
-    } else {
-       // 默认状态 - 绘制普通光标（圆圈）
-      ctx.beginPath();
-       ctx.arc(x, y, 15, 0, Math.PI * 2);
-       ctx.strokeStyle = 'rgba(80, 227, 194, 0.6)';
-       ctx.lineWidth = 3;
-       ctx.stroke();
-       
-      // 中心点
-      ctx.beginPath();
-       ctx.arc(x, y, 5, 0, Math.PI * 2);
-       ctx.fillStyle = 'rgba(80, 227, 194, 0.4)';
-       ctx.fill();
+    function resizeCanvas() {
+        gestureCanvas.width = window.innerWidth;
+        gestureCanvas.height = window.innerHeight;
     }
-   }
-   
-   // 处理手势（增强版）
-   function handleGesture(state) {
-      if (!handSelectEnabled) return;
-      
-   const gesture = state.currentGesture;
-    
-    // 检测屏幕上的可交互元素
-   const modeCardsVisible = modeSelection.style.display !== 'none';
-   const quizPanelVisible = quizPanel.style.display !== 'none';
-   const resultPanelVisible = resultPanel.style.display !== 'none';
-    
-    // 模式选择页面
-    if (modeCardsVisible && gesture === 'pinch' && state.pinchStrength > 0.7) {
-      const handX = state.handPosition.x * window.innerWidth;
-      const handY = state.handPosition.y * window.innerHeight;
-       
-      modeCards.forEach(card => {
-        const rect = card.getBoundingClientRect();
-         if (handX >= rect.left && handX <= rect.right && 
-            handY >= rect.top && handY <= rect.bottom) {
-           // 点击命中的卡片
-          card.click();
-         }
-      });
+
+    // --- 🔥 核心修复：手指计数算法 ---
+    function countExtendedFingers(landmarks) {
+        if (!landmarks || landmarks.length < 21) return 0;
+
+        let count = 0;
+        // 关键点索引：8=食指尖, 6=食指根; 12=中指尖, 10=中指根; ...
+        // Y坐标越小位置越高
+        if (landmarks[8].y < landmarks[6].y) count++;   // 食指
+        if (landmarks[12].y < landmarks[10].y) count++; // 中指
+        if (landmarks[16].y < landmarks[14].y) count++; // 无名指
+        if (landmarks[20].y < landmarks[18].y) count++; // 小指
+
+        return count;
     }
-    
-    // 答题页面
-    if (quizPanelVisible) {
-     const handX = state.handPosition.x * window.innerWidth;
-     const handY = state.handPosition.y * window.innerHeight;
-      
-      // 捏合手势 - 选择选项或按钮
-      if (gesture === 'pinch' && state.pinchStrength > 0.7) {
-        if (selectedOption === null) {
-           // 检测是否命中选项
-         const options = document.querySelectorAll('.option-item');
-          options.forEach((opt, idx) => {
-            const rect = opt.getBoundingClientRect();
-             if (handX >= rect.left && handX <= rect.right && 
-                handY >= rect.top && handY <= rect.bottom) {
-               selectOption(idx, opt);
-             }
-          });
+
+    // --- 绘制反馈 ---
+    function drawGestureFeedback(state) {
+        ctx.clearRect(0, 0, gestureCanvas.width, gestureCanvas.height);
+
+        if (!state.isTracking || !state.handPosition) return;
+
+        const x = state.handPosition.x * gestureCanvas.width;
+        const y = state.handPosition.y * gestureCanvas.height;
+
+        // 非答题模式：只画光标
+        if (quizPanel.style.display === 'none') {
+             ctx.beginPath();
+             ctx.arc(x, y, 10, 0, Math.PI * 2);
+             ctx.fillStyle = 'rgba(80, 227, 194, 0.8)';
+             ctx.fill();
+             return;
         }
-        
-        // 检测是否命中按钮（下一题、跳过等）
-       const buttons = document.querySelectorAll('button:not([disabled])');
-        buttons.forEach(btn => {
-          const rect = btn.getBoundingClientRect();
-           if (handX >= rect.left && handX <= rect.right && 
-              handY >= rect.top && handY <= rect.bottom) {
-            btn.click();
-          }
-        });
-      }
-      
-      // 张开手掌 - 循环切换选项
-      if (gesture === 'open_palm') {
-       const options = document.querySelectorAll('.option-item');
-        if (options.length === 0) return;
-        
-        // 找到当前选中的选项，切换到下一个
-        let currentIndex = -1;
-        options.forEach((opt, idx) => {
-          if (opt.classList.contains('selected')) {
-            currentIndex = idx;
-          }
-          opt.classList.remove('selected');
-        });
-        
-        // 切换到下一个
-      const nextIndex = (currentIndex + 1) % options.length;
-        options[nextIndex].classList.add('selected');
-        
-        // 播放音效
-        if (window.audioManager) {
-          window.audioManager.playGestureDetect();
-        }
-        
-        // 设置选中状态（但不提交）
-        selectedOption = nextIndex;
-      }
-      
-      // 握拳 - 确认选择
-      if (gesture === 'fist') {
-        if (selectedOption !== null && document.getElementById('nextBtn').style.display === 'none') {
-          // 还没有提交，提交当前选择
-        const optionItems = document.querySelectorAll('.option-item');
-          if (optionItems[selectedOption]) {
-            submitAnswer(selectedOption);
-          }
-        }
-      }
-    }
-    
-    // 结果页面
-    if (resultPanelVisible && gesture === 'pinch' && state.pinchStrength > 0.7) {
-     const handX = state.handPosition.x * window.innerWidth;
-     const handY = state.handPosition.y * window.innerHeight;
-      
-      // 检测结果页面的按钮
-     const buttons = document.querySelectorAll('#resultPanel button:not([disabled])');
-      buttons.forEach(btn => {
-       const rect = btn.getBoundingClientRect();
-        if (handX >= rect.left && handX <= rect.right && 
-          handY >= rect.top && handY <= rect.bottom) {
-         btn.click();
-        }
-      });
-    }
-  }
-       
-       // 启用/禁用手势选择
-       function setHandSelectEnabled(enabled) {
-           handSelectEnabled = enabled;
-           if (enabled) {
-               showGestureHint('👆 捏合选择答案 | 🖐️ 手掌切换选项 | ✊ 握拳确认');
-           } else {
-               hideGestureHint();
-           }
-       }
-       
-       // 显示手势提示
-       function showGestureHint(text) {
-           let hintEl = document.getElementById('gestureHint');
-           if (!hintEl) {
-               hintEl = document.createElement('div');
-               hintEl.id = 'gestureHint';
-               hintEl.style.cssText = `
-                   position: fixed;
-                   bottom: 20px;
-                   left: 50%;
-                   transform: translateX(-50%);
-                   background: rgba(80, 227, 194, 0.2);
-                   border: 1px solid var(--quiz-accent);
-                   padding: 12px 24px;
-                   border-radius: 8px;
-                 color: var(--quiz-accent);
-                   font-size: 14px;
-                   z-index: 1000;
-                   backdrop-filter: blur(10px);
-               `;
-               document.body.appendChild(hintEl);
-           }
-           hintEl.textContent = text;
-           hintEl.style.display = 'block';
-       }
-       
-       // 隐藏手势提示
-       function hideGestureHint() {
-         const hintEl = document.getElementById('gestureHint');
-           if (hintEl) {
-               hintEl.style.display = 'none';
-           }
-       }
-       
-       // 加载用户统计
-       function loadUserStats() {
-          const stats = window.userManager.getStats();
-            if (stats) {
-                document.getElementById('statTotal').textContent = stats.totalQuizzes;
-                document.getElementById('statCorrect').textContent = stats.correctCount;
-              const wrongCount = (window.userManager.getWrongQuestions() || []).length;
-                document.getElementById('statWrong').textContent = wrongCount;
-                document.getElementById('statAccuracy').textContent = stats.accuracy;
+
+        // 答题模式
+        if (quizPanel.style.display !== 'none' && handSelectEnabled) {
+
+            // 绘制手部位置标记
+            ctx.beginPath();
+            ctx.arc(x, y, 8, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+            ctx.fill();
+
+            // 如果已经显示下一题按钮，提示握拳
+            if (document.getElementById('nextBtn').style.display !== 'none') {
+
+                // 🔥 如果处于锁定冷却中，显示倒计时提示
+                if (isNextQuestionLocked) {
+                    ctx.fillStyle = "rgba(255, 255, 255, 0.7)";
+                    ctx.font = "16px Arial";
+                    ctx.fillText("⏳ 正在阅读解析...", x + 20, y);
+
+                    // 绘制一个小圆环表示等待
+                    ctx.beginPath();
+                    ctx.arc(x, y, 20, 0, Math.PI * 2);
+                    ctx.strokeStyle = "rgba(255, 255, 255, 0.3)";
+                    ctx.lineWidth = 3;
+                    ctx.stroke();
+                } else {
+                    // 冷却结束，允许握拳
+                    ctx.fillStyle = "#ffffff";
+                    ctx.font = "bold 24px Arial";
+                    ctx.fillText("✊ 握拳下一题", x + 20, y);
+                }
+                return;
+            }
+
+            const fingers = countExtendedFingers(state.landmarks);
+
+            // 只有检测到 1-4 指时才显示数字
+            if (fingers >= 1 && fingers <= 4) {
+                // 显示数字
+                ctx.font = "bold 60px Arial";
+                ctx.fillStyle = "#50e3c2";
+                ctx.shadowColor = "rgba(0,0,0,0.5)";
+                ctx.shadowBlur = 10;
+                ctx.fillText(fingers, x - 15, y - 40);
+                ctx.shadowBlur = 0;
+
+                // 进度圈
+                if (isHolding && lastDetectedFingerCount === fingers) {
+                    const elapsed = Date.now() - detectionStartTime;
+                    const progress = Math.min(elapsed / REQUIRED_HOLD_TIME, 1);
+
+                    ctx.beginPath();
+                    ctx.arc(x, y, 40, -Math.PI/2, (-Math.PI/2) + (Math.PI * 2 * progress));
+                    ctx.strokeStyle = "#50e3c2";
+                    ctx.lineWidth = 6;
+                    ctx.lineCap = "round";
+                    ctx.stroke();
+                }
             }
         }
-        
-        // 模式选择
-        modeCards.forEach(card => {
-            card.addEventListener('click', () => {
-              const mode = card.dataset.mode;
-                
-                if (mode === 'wrong') {
-                  const wrongQuestions = window.userManager.getWrongQuestions();
-                    if (wrongQuestions.length === 0) {
-                        alert('暂无错题，请先进行新题练习！');
-                        return;
+    }
+
+    // --- 处理手势逻辑 ---
+    function handleGesture(state) {
+        if (!handSelectEnabled) return;
+
+        // 1. 菜单/结果页：捏合点击
+        if (modeSelection.style.display !== 'none' || resultPanel.style.display !== 'none') {
+             if (state.currentGesture === 'pinch' && state.pinchStrength > 0.8) {
+                const handX = state.handPosition.x * window.innerWidth;
+                const handY = state.handPosition.y * window.innerHeight;
+
+                const targets = document.querySelectorAll('.mode-card, button:not([disabled])');
+                targets.forEach(target => {
+                    const rect = target.getBoundingClientRect();
+                    if (handX >= rect.left && handX <= rect.right &&
+                        handY >= rect.top && handY <= rect.bottom) {
+                        target.click();
                     }
+                });
+             }
+             return;
+        }
+
+        // 2. 答题页
+        if (quizPanel.style.display !== 'none') {
+
+            // 情况A：题目已答完，等待“下一题”
+            if (document.getElementById('nextBtn').style.display !== 'none') {
+
+                // 🔥 关键修改：如果还在冷却锁定中，直接忽略任何手势！
+                if (isNextQuestionLocked) return;
+
+                if (state.currentGesture === 'fist') {
+                     // 简单的节流
+                     const now = Date.now();
+                     if (!window._lastNextClick || now - window._lastNextClick > 1500) {
+                         document.getElementById('nextBtn').click();
+                         window._lastNextClick = now;
+                     }
                 }
-                
-               currentMode = mode;
-               startQuiz(mode);
-            });
+                return;
+            }
+
+            // 情况B：正在选择答案 (1-4指)
+            const fingers = countExtendedFingers(state.landmarks);
+
+            if (fingers >= 1 && fingers <= 4) {
+                if (fingers === lastDetectedFingerCount) {
+                    if (!isHolding) {
+                        isHolding = true;
+                        detectionStartTime = Date.now();
+                        highlightOption(fingers - 1);
+                    } else {
+                        // 计时结束，触发选择
+                        if (Date.now() - detectionStartTime >= REQUIRED_HOLD_TIME) {
+                            selectOption(fingers - 1);
+                            isHolding = false;
+                            lastDetectedFingerCount = -1;
+                        }
+                    }
+                } else {
+                    // 手指数量变化，重置计时
+                    lastDetectedFingerCount = fingers;
+                    isHolding = false;
+                    detectionStartTime = Date.now();
+                    highlightOption(fingers - 1);
+                }
+            } else {
+                // 手指数量无效，重置
+                isHolding = false;
+                lastDetectedFingerCount = -1;
+                clearHighlights();
+            }
+        }
+    }
+
+    // UI 辅助函数：高亮但不选中
+    function highlightOption(index) {
+        const options = document.querySelectorAll('.option-item');
+        options.forEach((opt, idx) => {
+             // 确保不超过选项总数
+             if (!opt) return;
+
+             if (idx === index) {
+                 opt.style.transform = "scale(1.03)";
+                 opt.style.backgroundColor = "rgba(80, 227, 194, 0.2)"; // 明显的青色背景
+                 opt.style.borderColor = "var(--quiz-accent)";
+             } else {
+                 if (!opt.classList.contains('correct') && !opt.classList.contains('wrong')) {
+                     opt.style.transform = "scale(1)";
+                     opt.style.backgroundColor = "";
+                     opt.style.borderColor = "";
+                 }
+             }
         });
-        
-        // 开始测验
-       function startQuiz(mode) {
-       const result = window.quizManager.startQuiz(mode, 5);
-           
-           if (!result.success) {
-               alert(result.message);
-               return;
-           }
-           
-           modeSelection.style.display = 'none';
-           quizPanel.style.display = 'block';
+    }
+
+    function clearHighlights() {
+        const options = document.querySelectorAll('.option-item');
+        options.forEach(opt => {
+            if (!opt.classList.contains('correct') && !opt.classList.contains('wrong')) {
+                 opt.style.transform = "scale(1)";
+                 opt.style.backgroundColor = "";
+                 opt.style.borderColor = "";
+            }
+        });
+    }
+
+    function setHandSelectEnabled(enabled) {
+        handSelectEnabled = enabled;
+        if (enabled) {
+            showGestureHint('✌️ 伸出手指(1-4)选择 | ✊ 握拳下一题');
+        } else {
+            hideGestureHint();
+        }
+    }
+
+    function showGestureHint(text) {
+        let hintEl = document.getElementById('gestureHint');
+        if (!hintEl) {
+            hintEl = document.createElement('div');
+            hintEl.id = 'gestureHint';
+            hintEl.style.cssText = `
+                position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+                background: rgba(80, 227, 194, 0.2); border: 1px solid var(--quiz-accent);
+                padding: 12px 24px; border-radius: 8px; color: var(--quiz-accent);
+                font-size: 14px; z-index: 1000; backdrop-filter: blur(10px);
+            `;
+            document.body.appendChild(hintEl);
+        }
+        hintEl.textContent = text;
+        hintEl.style.display = 'block';
+    }
+
+    function hideGestureHint() {
+        const hintEl = document.getElementById('gestureHint');
+        if (hintEl) hintEl.style.display = 'none';
+    }
+
+    function loadUserStats() {
+        const stats = window.userManager.getStats();
+        if (stats) {
+            document.getElementById('statTotal').textContent = stats.totalQuizzes;
+            document.getElementById('statCorrect').textContent = stats.correctCount;
+            const wrongCount = (window.userManager.getWrongQuestions() || []).length;
+            document.getElementById('statWrong').textContent = wrongCount;
+            document.getElementById('statAccuracy').textContent = stats.accuracy;
+        }
+    }
+
+    modeCards.forEach(card => {
+        card.addEventListener('click', () => {
+            const mode = card.dataset.mode;
+            if (mode === 'wrong' && window.userManager.getWrongQuestions().length === 0) {
+                alert('暂无错题，请先进行新题练习！');
+                return;
+            }
+            currentMode = mode;
+            startQuiz(mode);
+        });
+    });
+
+    function startQuiz(mode) {
+        const result = window.quizManager.startQuiz(mode, 5);
+        if (!result.success) {
+            alert(result.message);
+            return;
+        }
+        modeSelection.style.display = 'none';
+        quizPanel.style.display = 'block';
         score = 0;
-           updateScore();
-           loadQuestion();
-           
-           // 启用手势选择
-           setHandSelectEnabled(true);
-       }
-        
-        // 加载题目
-       function loadQuestion() {
-       const question = window.quizManager.getCurrentQuestion();
-       const progress = window.quizManager.getProgress();
-           
-           if (!question) {
-               showResult();
-               return;
-           }
-           
-           // 更新进度
-           document.getElementById('currentProgress').textContent = `${progress.current} / ${progress.total}`;
-           document.getElementById('progressFill').style.width = `${progress.percentage}%`;
-           document.getElementById('questionNumber').textContent = `第 ${progress.current} 题`;
-           
-           // 加载题目内容
-           document.getElementById('questionText').textContent = question.question;
-           
-           // 生成选项
-       const optionsList = document.getElementById('optionsList');
-           optionsList.innerHTML = '';
-           
-           question.options.forEach((option, index) => {
-           const optionItem = document.createElement('div');
-               optionItem.className = 'option-item';
-               optionItem.setAttribute('data-index', index);
-               optionItem.innerHTML = `
-                   <div class="option-marker">${String.fromCharCode(65 + index)}</div>
-                   <div class="option-text">${option}</div>
-               `;
-               
-               optionItem.addEventListener('click', () => selectOption(index, optionItem));
-               optionsList.appendChild(optionItem);
-           });
-           
-           // 重置状态
-           selectedOption = null;
-           document.getElementById('nextBtn').style.display = 'none';
-           document.getElementById('skipBtn').disabled = false;
-           document.getElementById('feedbackArea').classList.remove('show');
-           
-           // 显示手势提示
-           showGestureHint('👆 捏合选择 | 🖐️ 切换选项 | ✊ 确认');
-       }
-        
-        // 选择答案
-        function selectOption(index, element) {
-            if (selectedOption !== null) return;
-            
-            selectedOption = index;
-            
-            // 移除其他选项的选中状态
-            document.querySelectorAll('.option-item').forEach(item => {
-                item.classList.remove('selected');
-            });
-            
-            element.classList.add('selected');
-            
-            // 播放音效
-            if (window.audioManager) {
-                window.audioManager.playButtonClick();
+        updateScore();
+        loadQuestion();
+        setHandSelectEnabled(true);
+    }
+
+    function loadQuestion() {
+        const question = window.quizManager.getCurrentQuestion();
+        const progress = window.quizManager.getProgress();
+
+        if (!question) {
+            showResult();
+            return;
+        }
+
+        document.getElementById('currentProgress').textContent = `${progress.current} / ${progress.total}`;
+        document.getElementById('progressFill').style.width = `${progress.percentage}%`;
+        document.getElementById('questionNumber').textContent = `第 ${progress.current} 题`;
+        document.getElementById('questionText').textContent = question.question;
+
+        const optionsList = document.getElementById('optionsList');
+        optionsList.innerHTML = '';
+
+        question.options.forEach((option, index) => {
+            const optionItem = document.createElement('div');
+            optionItem.className = 'option-item';
+            optionItem.setAttribute('data-index', index);
+            // 显示数字标号，方便用户对应
+            optionItem.innerHTML = `<div class="option-marker">${index + 1}</div><div class="option-text">${option}</div>`;
+            optionItem.addEventListener('click', () => selectOption(index));
+            optionsList.appendChild(optionItem);
+        });
+
+        selectedOption = null;
+        document.getElementById('nextBtn').style.display = 'none';
+        document.getElementById('skipBtn').disabled = false;
+        document.getElementById('feedbackArea').classList.remove('show');
+
+        showGestureHint('✌️ 伸出手指(1-4)悬停确认 | ✊ 握拳下一题');
+    }
+
+    function selectOption(index) {
+        if (selectedOption !== null) return;
+        const options = document.querySelectorAll('.option-item');
+        if (!options[index]) return;
+
+        selectedOption = index;
+        options.forEach(item => item.classList.remove('selected'));
+        options[index].classList.add('selected');
+
+        if (window.audioManager) window.audioManager.playButtonClick();
+        submitAnswer(index);
+    }
+
+    function submitAnswer(selectedIndex) {
+        const question = window.quizManager.getCurrentQuestion();
+        const result = window.quizManager.submitAnswer(question.id, selectedIndex);
+        if (!result.success) return;
+
+        const optionItems = document.querySelectorAll('.option-item');
+        optionItems.forEach((item, index) => {
+            if (index === result.correctOption) item.classList.add('correct');
+            else if (index === selectedIndex && !result.isCorrect) item.classList.add('wrong');
+            item.style.pointerEvents = 'none';
+        });
+
+        clearHighlights(); // 清除高亮
+
+        if (result.isCorrect) {
+            score += 20;
+            updateScore();
+            if (window.audioManager) window.audioManager.playSuccess();
+        } else {
+            if (window.audioManager) window.audioManager.playError();
+        }
+
+        showFeedback(result.isCorrect, result.explanation);
+        document.getElementById('skipBtn').disabled = true;
+        document.getElementById('nextBtn').style.display = 'block';
+        document.getElementById('nextBtn').disabled = false;
+
+        // 🔥 核心修改：提交后，锁定下一题手势 2.5秒
+        // 这段时间强制用户看解析��且防止手指弯曲误触拳头
+        isNextQuestionLocked = true;
+        showGestureHint('⏳ 解析阅读中 (2s)...');
+
+        // 2.5秒后解除锁定
+        setTimeout(() => {
+            // 只有当还在当前题目页面时才解锁（防止用户快速手动点了下一题）
+            if (document.getElementById('nextBtn').style.display !== 'none') {
+                isNextQuestionLocked = false;
+                showGestureHint('✊ 握拳进入下一题');
             }
-            
-            // 提交答案
-            submitAnswer(index);
+        }, 2500);
+    }
+
+    function showFeedback(isCorrect, explanation) {
+        const area = document.getElementById('feedbackArea');
+        area.classList.add('show');
+        const title = document.getElementById('feedbackTitle');
+        const icon = document.getElementById('feedbackIcon');
+
+        if (isCorrect) {
+            title.className = 'feedback-title correct';
+            icon.textContent = '✅';
+            document.getElementById('feedbackText').textContent = '回答正确！';
+        } else {
+            title.className = 'feedback-title wrong';
+            icon.textContent = '❌';
+            document.getElementById('feedbackText').textContent = '回答错误';
         }
-        
-        // 提交答案
-        function submitAnswer(selectedIndex) {
-          const question = window.quizManager.getCurrentQuestion();
-          const result = window.quizManager.submitAnswer(question.id, selectedIndex);
-            
-            if (!result.success) return;
-            
-            // 更新选项样式
-          const optionItems = document.querySelectorAll('.option-item');
-            optionItems.forEach((item, index) => {
-                if (index === result.correctOption) {
-                    item.classList.add('correct');
-                } else if (index === selectedIndex && !result.isCorrect) {
-                    item.classList.add('wrong');
-                }
-                item.style.pointerEvents = 'none';
-            });
-            
-            // 更新分数
-            if (result.isCorrect) {
-               score += 20;
-                updateScore();
-                if (window.audioManager) {
-                    window.audioManager.playSuccess();
-                }
-            } else {
-                if (window.audioManager) {
-                    window.audioManager.playError();
-                }
-            }
-            
-            // 显示反馈
-            showFeedback(result.isCorrect, result.explanation);
-            
-            // 更新按钮状态
-            document.getElementById('skipBtn').disabled = true;
-            document.getElementById('nextBtn').style.display = 'block';
-            document.getElementById('nextBtn').disabled = false;
-        }
-        
-        // 显示反馈
-        function showFeedback(isCorrect, explanation) {
-          const feedbackArea = document.getElementById('feedbackArea');
-          const feedbackTitle = document.getElementById('feedbackTitle');
-          const feedbackIcon = document.getElementById('feedbackIcon');
-          const feedbackText = document.getElementById('feedbackText');
-          const feedbackExplanation = document.getElementById('feedbackExplanation');
-            
-            feedbackArea.classList.add('show');
-            
-            if (isCorrect) {
-                feedbackTitle.className = 'feedback-title correct';
-                feedbackIcon.textContent = '✅';
-                feedbackText.textContent = '回答正确！';
-            } else {
-                feedbackTitle.className = 'feedback-title wrong';
-                feedbackIcon.textContent = '❌';
-                feedbackText.textContent = '回答错误';
-            }
-            
-            feedbackExplanation.textContent = explanation;
-        }
-        
-        // 更新分数
-        function updateScore() {
-            document.getElementById('currentScore').textContent = score;
-        }
-        
-        // 下一题
-        document.getElementById('nextBtn').addEventListener('click', () => {
-            loadQuestion();
-        });
-        
-        // 跳过题目
-        document.getElementById('skipBtn').addEventListener('click', () => {
-          const question = window.quizManager.getCurrentQuestion();
-           window.quizManager.submitAnswer(question.id, -1);
-            loadQuestion();
-        });
-        
-        // 显示结果
-       function showResult() {
-       const quizResult = window.quizManager.completeQuiz();
-           
-           quizPanel.style.display = 'none';
-           resultPanel.style.display = 'block';
-           
-           document.getElementById('resultTotal').textContent = quizResult.totalQuestions;
-           document.getElementById('resultCorrect').textContent = quizResult.correctCount;
-           document.getElementById('resultWrong').textContent = quizResult.wrongCount;
-           document.getElementById('resultAccuracy').textContent = quizResult.accuracy;
-           
-           // 播放完成音效
-           if (window.audioManager) {
-               window.audioManager.playSuccess();
-           }
-           
-           // 禁用手势选择
-           setHandSelectEnabled(false);
-       }
-        
-        // 再做一次
-       document.getElementById('retryBtn').addEventListener('click', () => {
-           resultPanel.style.display = 'none';
-           modeSelection.style.display = 'block';
-           loadUserStats();
-           setHandSelectEnabled(false);
-       });
-        
-        // 返回首页
-        document.getElementById('homeBtn').addEventListener('click', () => {
-            window.location.href = 'main-site.html';
-        });
-        
-        // 返回
-        backBtn.addEventListener('click', () => {
-            window.location.href = 'main-site.html';
-        });
+        document.getElementById('feedbackExplanation').textContent = explanation;
+    }
+
+    function updateScore() {
+        document.getElementById('currentScore').textContent = score;
+    }
+
+    document.getElementById('nextBtn').addEventListener('click', loadQuestion);
+    document.getElementById('skipBtn').addEventListener('click', () => {
+        const q = window.quizManager.getCurrentQuestion();
+        window.quizManager.submitAnswer(q.id, -1);
+        loadQuestion();
+    });
+
+    function showResult() {
+        const res = window.quizManager.completeQuiz();
+        quizPanel.style.display = 'none';
+        resultPanel.style.display = 'block';
+        document.getElementById('resultTotal').textContent = res.totalQuestions;
+        document.getElementById('resultCorrect').textContent = res.correctCount;
+        document.getElementById('resultWrong').textContent = res.wrongCount;
+        document.getElementById('resultAccuracy').textContent = res.accuracy;
+        if (window.audioManager) window.audioManager.playSuccess();
+        setHandSelectEnabled(false);
+    }
+
+    document.getElementById('retryBtn').addEventListener('click', () => {
+        resultPanel.style.display = 'none';
+        modeSelection.style.display = 'block';
+        loadUserStats();
+        setHandSelectEnabled(false);
+    });
+
+    // --- 修复点：强制使用 top 窗口跳转，防止 iframe 套娃 ---
+    document.getElementById('homeBtn').addEventListener('click', () => {
+        window.top.location.href = 'main-site.html';
+    });
+
+    backBtn.addEventListener('click', () => {
+        window.top.location.href = 'main-site.html';
+    });
     </script>
 </body>
 </html>

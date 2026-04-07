@@ -1,231 +1,467 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>夜光演变 · 定格运镜</title>
-    <script>
-      // 向父窗口发送场景信息
-      if (window.parent !== window) {
-        window.parent.postMessage({
-          type: 'SCENE_INFO',
-          scene: 'timeline',
-          title: '时空演变',
-          description: '2012-2023 夜光数据演变'
-        }, '*');
-      }
-    </script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/build/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/controls/OrbitControls.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/tween.js/18.6.4/tween.umd.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>夜光演变 · 环形盲盒空间交互</title>
 
-    <style>
-        body { margin: 0; overflow: hidden; background-color: #000; }
-        #loading {
-            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            color: #00ffff; font-family: sans-serif; font-size: 20px; pointer-events: none;
-            opacity: 1; transition: opacity 0.5s;
-        }
-    </style>
+<script src="https://cdn.jsdelivr.net/npm/three@0.132.2/build/three.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tween.js/18.6.4/tween.umd.js"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+
+<style>
+body { margin: 0; overflow: hidden; background-color: #02050a; font-family: "Microsoft YaHei", sans-serif; user-select: none; }
+
+#ui-hint {
+  position: absolute; top: 40px; left: 50%; transform: translateX(-50%);
+  background: rgba(0, 255, 255, 0.1); border: 1px solid rgba(0,255,255,0.4); box-shadow: 0 0 20px rgba(0,255,255,0.2);
+  padding: 15px 40px; border-radius: 40px; color: #fff; font-size: 18px; letter-spacing: 2px;
+  display: flex; gap: 30px; z-index: 100; backdrop-filter: blur(8px);
+}
+#ui-hint b { color: #00ffff; margin-right: 8px; font-size: 22px; }
+
+#progress-bar { position: absolute; left: 40px; top: 40px; color: #fff; font-size: 18px; z-index: 100; letter-spacing: 2px;}
+.dot { display: inline-block; width: 12px; height: 12px; border-radius: 50%; border: 2px solid #00ffff; margin: 0 5px; }
+.dot.active { background: #00ffff; box-shadow: 0 0 15px #00ffff; }
+
+#video-overlay {
+  position:fixed; top:0; left:0; width:100vw; height:100vh; z-index:900; background:rgba(0,0,0,0.85);
+  display:none; flex-direction:column; justify-content:center; align-items:center; backdrop-filter: blur(15px);
+  opacity: 0; transition: opacity 0.5s ease;
+}
+#factor-video { max-width:85%; max-height:80%; outline:none; border:2px solid #00ffff; border-radius:12px; box-shadow:0 0 50px rgba(0,255,255,0.4); }
+#video-title { color: #00ffff; font-size: 32px; margin-bottom: 20px; letter-spacing: 4px; text-shadow: 0 0 10px #00ffff; }
+.video-hint-text { color: #aaa; font-size: 16px; margin-top: 20px; letter-spacing: 2px; }
+
+#next-stage-overlay {
+  position:fixed; top:0; left:0; width:100vw; height:100vh; z-index:950; background:rgba(0,0,0,0.9);
+  display:none; flex-direction:column; justify-content:center; align-items:center;
+  opacity: 0; transition: opacity 1s ease;
+}
+#next-stage-overlay h1 { color: #f6c24b; font-size: 50px; letter-spacing: 10px; text-shadow: 0 0 40px #f6c24b; }
+#next-stage-overlay p { color: #fff; font-size: 20px; margin-top: 20px; }
+
+.cam-container {
+  position: fixed; right: 30px; bottom: 30px; width: 220px; height: 165px;
+  background: #000; border: 1px solid rgba(0,255,255,0.5); border-radius: 8px; overflow: hidden; z-index: 1000;
+  box-shadow: 0 0 20px rgba(0,255,255,0.2);
+}
+.cam-container video, .cam-container canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
+#gesture-status {
+  position: absolute; top: -35px; right: 0; background: rgba(0,255,255,0.2);
+  color: #00ffff; padding: 6px 12px; border-radius: 4px; font-size: 14px; border: 1px solid #00ffff; backdrop-filter: blur(4px);
+}
+
+#cursor {
+  position:fixed; width:24px; height:24px; border-radius:50%; background:rgba(0, 255, 255, 0.4); border:2px solid #00ffff;
+  pointer-events:none; z-index:9999; display:none; transform:translate(-50%, -50%); box-shadow:0 0 15px #00ffff;
+  transition: width 0.2s, height 0.2s, background 0.2s;
+}
+.cursor-hover { width: 50px !important; height: 50px !important; background: rgba(255, 215, 0, 0.4) !important; border-color: gold !important; box-shadow: 0 0 20px gold !important; }
+.cursor-drag { background: rgba(255, 100, 100, 0.5) !important; border-color: #ff3c3c !important; }
+</style>
 </head>
 <body>
 
-    <div id="loading">正在初始化...</div>
+<div id="ui-hint">
+  <span><b>✊</b> 握拳左右拖动旋转阵列</span>
+  <span><b>☝️</b> 食指瞄准卡片</span>
+  <span id="action-hint"><b>👌</b> 捏合抽取盲盒</span>
+</div>
 
-    <!-- 关键修改：去掉 autoplay，让 JS 控制播放时机 -->
-    <video id="video-texture" loop muted crossOrigin="anonymous" playsinline style="display:none">
-        <source src="./night_light_change_2012_2023.mp4" type="video/mp4">
-    </video>
+<div id="progress-bar">
+  要素解析进度：
+  <span class="dot" id="dot-1"></span>
+  <span class="dot" id="dot-2"></span>
+  <span class="dot" id="dot-3"></span>
+</div>
 
-    <script>
-        // === 🎥 运镜参数 ===
-        // 初始：高空全貌
-        const START_LAT = 35.0;
-        const START_LON = 104.0;
-        const START_DIST = 16.0;
+<div id="video-overlay">
+  <div id="video-title">正在解析...</div>
+  <video id="factor-video" src="" controls></video>
+  <div class="video-hint-text"><b>🖐️</b>张开：播放 &nbsp;|&nbsp; <b>✊</b>握拳：暂停 &nbsp;|&nbsp; <b style="color:#ff3c3c">👌</b>捏合：跳过视频</div>
+</div>
 
-        // 目标：低空聚焦西部
-        const TARGET_LAT = 36.0;
-        const TARGET_LON = 95.0;
-        const TARGET_DIST = 9.5;
+<div id="next-stage-overlay">
+  <h1>三大核心要素已集齐</h1>
+  <p>正在自动进入下一阶段演变...</p>
+</div>
 
-        const EARTH_RADIUS = 5;
-        const ROTATION_OFFSET_Y = 4.71;
+<div class="cam-container" id="cam-box">
+  <div id="gesture-status">启动引擎中...</div>
+  <video id="webcam" autoplay playsinline></video>
+  <canvas id="hand-canvas"></canvas>
+</div>
 
-        let scene, camera, renderer;
-        let earthMesh, borderGroup, huLineGroup;
-        let videoElement;
+<div id="cursor"></div>
 
-        function init() {
-            scene = new THREE.Scene();
-            scene.fog = new THREE.FogExp2(0x000000, 0.02);
+<script>
+const videosToPlay = [
+  { src: './assets/video/地形因素.mp4', title: '地形屏障因素', icon: '⛰️' },
+  { src: './assets/video/气候因素.mp4', title: '季风气候因素', icon: '🌤️' },
+  { src: './assets/video/经济因素.mp4', title: '经济虹吸效应', icon: '💰' }
+];
+let currentDraw = 0;
+let APP_STATE = 'EXPLORE';
+let activeCard = null;
 
-            camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+let scene, camera, renderer, particlesMesh, carouselGroup;
+const cardsData = [];
 
-            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-            renderer.setSize(window.innerWidth, window.innerHeight);
-            renderer.outputEncoding = THREE.sRGBEncoding;
-            document.body.appendChild(renderer.domElement);
+function initThree() {
+  scene = new THREE.Scene();
+  scene.fog = new THREE.FogExp2(0x02050a, 0.015);
+  camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+  camera.position.set(0, 3, 35);
 
-            // 1. 创建视频纹理
-            videoElement = document.getElementById('video-texture');
-            const videoTexture = new THREE.VideoTexture(videoElement);
-            videoTexture.minFilter = THREE.LinearFilter;
-            videoTexture.magFilter = THREE.LinearFilter;
-            videoTexture.encoding = THREE.sRGBEncoding;
+  renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  document.body.appendChild(renderer.domElement);
 
-            // 2. 创建地球
-            const geometry = new THREE.SphereGeometry(EARTH_RADIUS, 64, 64);
-            const material = new THREE.MeshBasicMaterial({ map: videoTexture, color: 0xeeeeee });
-            earthMesh = new THREE.Mesh(geometry, material);
-            earthMesh.rotation.y = ROTATION_OFFSET_Y;
-            scene.add(earthMesh);
+  const coreGroup = new THREE.Group();
+  scene.add(coreGroup);
 
-            // 3. 加载辅助线
-            loadChinaBorder();
-            drawHuLine();
+  const innerGeo = new THREE.SphereGeometry(2.5, 32, 32);
+  const innerMat = new THREE.MeshBasicMaterial({ color: 0x0055ff, wireframe: true });
+  coreGroup.add(new THREE.Mesh(innerGeo, innerMat));
 
-            // 4. 设置初始相机位置
-            setCameraPos(START_LAT, START_LON, START_DIST);
+  const glowGeo = new THREE.SphereGeometry(3.2, 32, 32);
+  const glowMat = new THREE.MeshBasicMaterial({ color: 0x00ffff, transparent: true, opacity: 0.15, blending: THREE.AdditiveBlending });
+  coreGroup.add(new THREE.Mesh(glowGeo, glowMat));
 
-            const controls = new THREE.OrbitControls(camera, renderer.domElement);
-            controls.enableDamping = true;
-            controls.enablePan = false;
+  // 💥 终极增强粒子数量：25000颗
+  const pGeo = new THREE.BufferGeometry();
+  const particleCount = 25000;
+  const pPos = new Float32Array(particleCount * 3);
+  const pColors = new Float32Array(particleCount * 3);
 
-            window.addEventListener('resize', onWindowResize);
+  for(let i=0; i<particleCount; i++) {
+    pPos[i*3] = (Math.random() - 0.5) * 300;     // 更宽的X轴分布
+    pPos[i*3+1] = (Math.random() - 0.5) * 200;   // 更高的Y轴分布
+    pPos[i*3+2] = (Math.random() - 0.5) * 300;   // 更深邃的Z轴分布
 
-            // === 🎬 核心流程控制 ===
-            // 等待视频元数据加载完成（确保画面不是黑的）
-            if (videoElement.readyState >= 2) {
-                startSequence();
-            } else {
-                videoElement.addEventListener('loadeddata', startSequence);
-            }
+    // 赋予浅蓝和深蓝两种随机颜色
+    const isDark = Math.random() > 0.5;
+    pColors[i*3] = 0; // R
+    pColors[i*3+1] = isDark ? 0.3 : 0.8; // G
+    pColors[i*3+2] = 1.0; // B
+  }
+  pGeo.setAttribute('position', new THREE.BufferAttribute(pPos, 3));
+  pGeo.setAttribute('color', new THREE.BufferAttribute(pColors, 3));
 
-            animate();
-        }
+  // 尺寸缩小到 0.18，让漫天繁星显得更细腻
+  const pMat = new THREE.PointsMaterial({ size: 0.18, vertexColors: true, transparent: true, opacity: 0.7, blending: THREE.AdditiveBlending });
+  particlesMesh = new THREE.Points(pGeo, pMat);
+  scene.add(particlesMesh);
 
-        function startSequence() {
-            document.getElementById('loading').style.opacity = 0;
+  carouselGroup = new THREE.Group();
+  scene.add(carouselGroup);
 
-            // 第一步：先手动把视频定在第 0.1 秒（显示初始夜景，不播放）
-            videoElement.currentTime = 0.1;
+  const cardCount = 8;
+  const radius = 13;
 
-            // 第二步：延迟一点点后，开始运镜
-            setTimeout(() => {
-                startCameraAnimation();
-            }, 500);
-        }
+  for(let i=0; i < cardCount; i++) {
+    const angle = (i / cardCount) * Math.PI * 2;
+    const x = Math.sin(angle) * radius;
+    const z = Math.cos(angle) * radius;
+    createCard(x, 0, z, i);
+  }
 
-        // === 🎥 运镜动画 ===
-        function startCameraAnimation() {
-            // 计算目标坐标
-            const startPos = camera.position.clone();
-            const targetPos = getVectorFromLatLon(TARGET_LAT, TARGET_LON, TARGET_DIST);
+  window.addEventListener('resize', () => {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+  });
 
-            new TWEEN.Tween(camera.position)
-                .to({ x: targetPos.x, y: targetPos.y, z: targetPos.z }, 3000) // 3秒运镜
-                .easing(TWEEN.Easing.Cubic.InOut)
-                .onUpdate(() => {
-                    camera.lookAt(0, 0, 0); // 始终看向地球中心
-                })
-                .onComplete(() => {
-                    // 第三步：运镜结束后，开始播放视频
-                    console.log("运镜到位，开始播放演变...");
-                    videoElement.play();
-                })
-                .start();
-        }
+  animateThree();
+}
 
-        // === 工具函数 ===
-        function getVectorFromLatLon(lat, lon, dist) {
-            const phi = (90 - lat) * (Math.PI / 180);
-            const theta = (lon + 180) * (Math.PI / 180) + ROTATION_OFFSET_Y;
-            return new THREE.Vector3(
-                -(dist) * Math.sin(phi) * Math.cos(theta),
-                (dist) * Math.cos(phi),
-                (dist) * Math.sin(phi) * Math.sin(theta)
-            );
-        }
+function createTextTexture(title, icon, bgColor, mainColor, isBack = false) {
+  const canvas = document.createElement('canvas');
+  canvas.width = 512; canvas.height = 768;
+  const ctx = canvas.getContext('2d');
 
-        function setCameraPos(lat, lon, dist) {
-            const pos = getVectorFromLatLon(lat, lon, dist);
-            camera.position.copy(pos);
-            camera.lookAt(0, 0, 0);
-        }
+  ctx.fillStyle = bgColor; ctx.fillRect(0, 0, 512, 768);
+  ctx.strokeStyle = mainColor; ctx.lineWidth = 15; ctx.strokeRect(20, 20, 472, 728);
+  ctx.strokeStyle = 'rgba(0, 255, 255, 0.2)'; ctx.lineWidth = 3; ctx.strokeRect(40, 40, 432, 688);
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
 
-        function drawHuLine() {
-            huLineGroup = new THREE.Group();
-            const heiheLat = 50.24, heiheLon = 127.53;
-            const tengLat = 25.02, tengLon = 98.49;
-            const start = latLongToVector3(heiheLat, heiheLon, EARTH_RADIUS + 0.03);
-            const end = latLongToVector3(tengLat, tengLon, EARTH_RADIUS + 0.03);
-            const points = greatCirclePoints(start, end, EARTH_RADIUS + 0.03, 100);
-            const geometry = new THREE.BufferGeometry().setFromPoints(points);
-            const material = new THREE.LineBasicMaterial({ color: 0xff3300, linewidth: 3, transparent: true, opacity: 0.9 });
-            const line = new THREE.Line(geometry, material);
-            huLineGroup.add(line);
-            const dotGeo = new THREE.SphereGeometry(0.06, 16, 16);
-            const dotMat = new THREE.MeshBasicMaterial({ color: 0xffaa00 });
-            const dot1 = new THREE.Mesh(dotGeo, dotMat); dot1.position.copy(start);
-            const dot2 = new THREE.Mesh(dotGeo, dotMat); dot2.position.copy(end);
-            huLineGroup.add(dot1); huLineGroup.add(dot2);
-            huLineGroup.rotation.y = earthMesh.rotation.y;
-            scene.add(huLineGroup);
-        }
+  if (isBack) {
+    ctx.fillStyle = mainColor; ctx.font = 'bold 180px sans-serif'; ctx.fillText('?', 256, 320);
+    ctx.beginPath(); ctx.arc(256, 320, 140, 0, Math.PI * 2); ctx.strokeStyle = 'rgba(0, 255, 255, 0.4)';
+    ctx.lineWidth = 6; ctx.setLineDash([15, 15]); ctx.stroke(); ctx.setLineDash([]);
+    ctx.font = 'bold 36px "Microsoft YaHei"'; ctx.fillStyle = '#00ffff'; ctx.fillText('未 知 因 素', 256, 550);
+  } else {
+    ctx.beginPath(); ctx.arc(256, 300, 130, 0, Math.PI * 2); ctx.strokeStyle = 'rgba(246, 194, 75, 0.3)';
+    ctx.lineWidth = 8; ctx.setLineDash([20, 10]); ctx.stroke(); ctx.setLineDash([]);
+    ctx.font = '140px "Segoe UI Emoji", "Apple Color Emoji", sans-serif'; ctx.fillText(icon, 256, 325);
+    ctx.beginPath(); ctx.moveTo(106, 480); ctx.lineTo(406, 480); ctx.strokeStyle = mainColor; ctx.lineWidth = 2; ctx.stroke();
+    ctx.fillStyle = mainColor; ctx.font = 'bold 45px "Microsoft YaHei"'; ctx.fillText(title, 256, 560);
+  }
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.anisotropy = renderer.capabilities.getMaxAnisotropy();
+  return tex;
+}
 
-        function greatCirclePoints(v1, v2, r, segments) {
-            const u1 = v1.clone().normalize(); const u2 = v2.clone().normalize();
-            const angle = Math.acos(Math.min(1, Math.max(-1, u1.dot(u2))));
-            const sinAngle = Math.sin(angle); const points = [];
-            for (let i = 0; i <= segments; i++) {
-                const t = i / segments;
-                const w1 = Math.sin((1 - t) * angle) / sinAngle; const w2 = Math.sin(t * angle) / sinAngle;
-                points.push(u1.clone().multiplyScalar(w1).add(u2.clone().multiplyScalar(w2)).multiplyScalar(r));
-            }
-            return points;
-        }
+function createCard(x, y, z, id) {
+  const group = new THREE.Group();
+  group.position.set(x, y, z);
 
-        function loadChinaBorder() {
-            const loader = new THREE.FileLoader();
-            loader.load('./china.json', (data) => {
-                try {
-                    const jsonData = JSON.parse(data);
-                    borderGroup = new THREE.Group();
-                    const lineMaterial = new THREE.LineBasicMaterial({ color: 0xffdd00, transparent: true, opacity: 0.6 });
-                    jsonData.features.forEach(feature => {
-                        const geometryData = feature.geometry;
-                        const coordinates = geometryData.type === 'MultiPolygon' ? geometryData.coordinates.flat() : geometryData.coordinates;
-                        coordinates.forEach(poly => {
-                            const points = poly.map(coord => latLongToVector3(coord[1], coord[0], EARTH_RADIUS + 0.01));
-                            borderGroup.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(points), lineMaterial));
-                        });
-                    });
-                    borderGroup.rotation.y = earthMesh.rotation.y;
-                    scene.add(borderGroup);
-                } catch (e) {}
-            });
-        }
+  const backTex = createTextTexture('', '', '#0a1526', '#00ffff', true);
+  const backMat = new THREE.MeshBasicMaterial({ map: backTex, side: THREE.FrontSide });
+  const backMesh = new THREE.Mesh(new THREE.PlaneGeometry(3.5, 5.25), backMat);
+  backMesh.rotation.y = Math.PI; backMesh.position.z = -0.05;
 
-        function latLongToVector3(lat, lon, radius) {
-            const phi = (90 - lat) * (Math.PI / 180);
-            const theta = (lon + 180) * (Math.PI / 180);
-            return new THREE.Vector3(-(radius) * Math.sin(phi) * Math.cos(theta), (radius) * Math.cos(phi), (radius) * Math.sin(phi) * Math.sin(theta));
-        }
+  const frontTex = createTextTexture('加载中...', '⏳', '#112a35', '#f6c24b', false);
+  const frontMat = new THREE.MeshBasicMaterial({ map: frontTex, side: THREE.FrontSide });
+  const frontMesh = new THREE.Mesh(new THREE.PlaneGeometry(3.5, 5.25), frontMat);
+  frontMesh.rotation.y = 0; frontMesh.position.z = 0.05;
 
-        function onWindowResize() {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-        }
+  group.add(backMesh, frontMesh);
+  group.lookAt(0, 0, 0);
 
-        function animate() {
-            requestAnimationFrame(animate);
-            TWEEN.update(); // 必须调用
-            renderer.render(scene, camera);
-        }
+  group.userData = { id: id, isFlipped: false, frontMat: frontMat, basePos: group.position.clone(), localQuat: group.quaternion.clone() };
+  carouselGroup.add(group);
+  cardsData.push(group);
+}
 
-        init();
-    </script>
+function animateThree() {
+  requestAnimationFrame(animateThree);
+  TWEEN.update();
+
+  if(particlesMesh) particlesMesh.rotation.y -= 0.0008;
+
+  if (APP_STATE === 'EXPLORE') {
+    if (!isDraggingCarousel) carouselGroup.rotation.y += 0.002;
+    const time = Date.now() * 0.002;
+    cardsData.forEach((card, idx) => {
+      card.position.y = card.userData.basePos.y + Math.sin(time + idx) * 0.3;
+    });
+  }
+  renderer.render(scene, camera);
+}
+
+function drawCard(cardGroup) {
+  if (cardGroup.userData.isFlipped || APP_STATE !== 'EXPLORE') return;
+  if (currentDraw >= 3) return;
+
+  APP_STATE = 'TRANSITION';
+  activeCard = cardGroup;
+  cardGroup.userData.isFlipped = true;
+
+  const currentVideoData = videosToPlay[currentDraw];
+  const newFrontTex = createTextTexture(currentVideoData.title, currentVideoData.icon, '#112a35', '#f6c24b', false);
+  cardGroup.userData.frontMat.map = newFrontTex;
+  cardGroup.userData.frontMat.needsUpdate = true;
+
+  cardGroup.userData.localPos = cardGroup.position.clone();
+  cardGroup.userData.localQuat = cardGroup.quaternion.clone();
+  scene.attach(cardGroup);
+
+  const targetPos = new THREE.Vector3(0, camera.position.y, 16);
+  const targetQuat = new THREE.Quaternion().setFromEuler(new THREE.Euler(0, 0, 0));
+
+  new TWEEN.Tween(cardGroup.position).to(targetPos, 800).easing(TWEEN.Easing.Cubic.InOut).start();
+
+  const startQuat = cardGroup.quaternion.clone();
+  new TWEEN.Tween({ t: 0 }).to({ t: 1 }, 800).easing(TWEEN.Easing.Cubic.InOut).onUpdate((o) => {
+    cardGroup.quaternion.copy(startQuat).slerp(targetQuat, o.t);
+  }).onComplete(() => {
+    setTimeout(() => openVideoOverlay(currentVideoData), 400);
+  }).start();
+}
+
+const factorVideo = document.getElementById('factor-video');
+const videoOverlay = document.getElementById('video-overlay');
+const videoTitle = document.getElementById('video-title');
+
+function openVideoOverlay(videoData) {
+  APP_STATE = 'TRANSITION';
+  videoTitle.innerText = videoData.icon + ' ' + videoData.title;
+  factorVideo.src = videoData.src;
+
+  videoOverlay.style.display = 'flex';
+  setTimeout(() => {
+    videoOverlay.style.opacity = '1';
+    factorVideo.play().catch(()=>{});
+    APP_STATE = 'PLAYING';
+  }, 50);
+  factorVideo.onended = closeVideoOverlay;
+}
+
+function closeVideoOverlay() {
+  if (APP_STATE !== 'PLAYING') return;
+  APP_STATE = 'TRANSITION';
+
+  videoOverlay.style.opacity = '0';
+  factorVideo.pause();
+
+  setTimeout(() => {
+    videoOverlay.style.display = 'none';
+
+    const dummy = new THREE.Object3D();
+    dummy.position.copy(activeCard.userData.localPos);
+
+    const flippedQuat = activeCard.userData.localQuat.clone().multiply(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), Math.PI));
+    dummy.quaternion.copy(flippedQuat);
+
+    carouselGroup.add(dummy);
+    carouselGroup.updateMatrixWorld(true);
+
+    const targetWorldPos = new THREE.Vector3();
+    const targetWorldQuat = new THREE.Quaternion();
+    dummy.getWorldPosition(targetWorldPos);
+    dummy.getWorldQuaternion(targetWorldQuat);
+
+    new TWEEN.Tween(activeCard.position).to(targetWorldPos, 800).easing(TWEEN.Easing.Cubic.InOut).start();
+
+    const startQuat = activeCard.quaternion.clone();
+    new TWEEN.Tween({ t: 0 }).to({ t: 1 }, 800).easing(TWEEN.Easing.Cubic.InOut).onUpdate((o) => {
+      activeCard.quaternion.copy(startQuat).slerp(targetWorldQuat, o.t);
+    }).onComplete(() => {
+      carouselGroup.attach(activeCard);
+      carouselGroup.remove(dummy);
+      activeCard = null;
+
+      currentDraw++;
+      document.getElementById(`dot-${currentDraw}`).classList.add('active');
+
+      if (currentDraw >= 3) triggerNextStage();
+      else APP_STATE = 'EXPLORE';
+    }).start();
+
+  }, 500);
+}
+
+function triggerNextStage() {
+  APP_STATE = 'TRANSITION';
+  const nextLayer = document.getElementById('next-stage-overlay');
+  nextLayer.style.display = 'flex';
+  setTimeout(() => nextLayer.style.opacity = '1', 50);
+
+  setTimeout(() => {
+    if (window.parent !== window) window.parent.postMessage({ type: 'SCENE_TRANSITION', action: 'next' }, '*');
+  }, 3000);
+}
+
+// ==========================================
+// 3. 🖐️ 手势与防误触核心引擎
+// ==========================================
+const cursor = document.getElementById('cursor');
+const statusText = document.getElementById('gesture-status');
+const raycaster = new THREE.Raycaster();
+const mouseVec = new THREE.Vector2();
+
+let isDraggingCarousel = false;
+let prevHandPos = { x: 0, y: 0 };
+let hoveredCard = null;
+let lastGesture = '';
+
+async function initHands() {
+  const video = document.getElementById('webcam');
+  const canvas = document.getElementById('hand-canvas');
+  const ctx = canvas.getContext('2d');
+
+  const hands = new Hands({ locateFile: (f) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${f}` });
+  hands.setOptions({ maxNumHands: 1, modelComplexity: 1, minDetectionConfidence: 0.6, minTrackingConfidence: 0.6 });
+
+  hands.onResults((results) => {
+    ctx.clearRect(0, 0, canvas.width, canvas.height); ctx.drawImage(results.image, 0, 0, canvas.width, canvas.height);
+    if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0 && APP_STATE !== 'TRANSITION') {
+      const landmarks = results.multiHandLandmarks[0];
+      drawConnectors(ctx, landmarks, HAND_CONNECTIONS, {color: '#00ffff', lineWidth: 2});
+      processGestures(landmarks);
+    } else {
+      cursor.style.display = 'none'; isDraggingCarousel = false;
+    }
+  });
+
+  const cameraObj = new Camera(video, { onFrame: async () => { await hands.send({ image: video }); }, width: 320, height: 240 });
+  cameraObj.start().then(() => { statusText.innerText = '✅ 交互系统就绪'; });
+}
+
+function processGestures(landmarks) {
+  const indexTip = landmarks[8];
+  const px = (1 - indexTip.x) * window.innerWidth;
+  const py = indexTip.y * window.innerHeight;
+
+  cursor.style.display = 'block'; cursor.style.left = `${px}px`; cursor.style.top = `${py}px`;
+
+  const distThumbIndex = Math.hypot(landmarks[4].x - landmarks[8].x, landmarks[4].y - landmarks[8].y);
+  const distIndexWrist = Math.hypot(landmarks[8].x - landmarks[0].x, landmarks[8].y - landmarks[0].y);
+  const distMiddleWrist = Math.hypot(landmarks[12].x - landmarks[0].x, landmarks[12].y - landmarks[0].y);
+  const distRingWrist = Math.hypot(landmarks[16].x - landmarks[0].x, landmarks[16].y - landmarks[0].y);
+
+  const isPinch = distThumbIndex < 0.06 && distIndexWrist > 0.25;
+  const isFist = distIndexWrist < 0.22 && distMiddleWrist < 0.22 && distRingWrist < 0.22;
+  const isOpen = distMiddleWrist > 0.4 && !isPinch && !isFist;
+
+  if (APP_STATE === 'PLAYING') {
+    if (isPinch && lastGesture !== 'PINCH') { closeVideoOverlay(); lastGesture = 'PINCH'; }
+    else if (isFist && lastGesture !== 'FIST') { factorVideo.pause(); statusText.innerText = '✊ 暂停'; lastGesture = 'FIST'; }
+    else if (isOpen && lastGesture !== 'OPEN') { factorVideo.play(); statusText.innerText = '🖐️ 播放'; lastGesture = 'OPEN'; }
+    if (!isPinch && !isFist && !isOpen) lastGesture = '';
+    return;
+  }
+
+  if (APP_STATE === 'EXPLORE') {
+    if (isFist && !hoveredCard) {
+      if (!isDraggingCarousel) { isDraggingCarousel = true; cursor.className = 'cursor-drag'; statusText.innerText = '✊ 拨动光环'; }
+      else {
+        carouselGroup.rotation.y -= (indexTip.x - prevHandPos.x) * 3.5;
+      }
+    } else {
+      isDraggingCarousel = false; cursor.className = '';
+    }
+    prevHandPos = { x: indexTip.x, y: indexTip.y };
+
+    if (!isFist) {
+      mouseVec.x = (px / window.innerWidth) * 2 - 1;
+      mouseVec.y = -(py / window.innerHeight) * 2 + 1;
+      raycaster.setFromCamera(mouseVec, camera);
+      const intersects = raycaster.intersectObjects(carouselGroup.children, true);
+
+      if (intersects.length > 0) {
+        const hitGroup = intersects[0].object.parent;
+        if (!hitGroup.userData.isFlipped) {
+          cursor.className = 'cursor-hover'; statusText.innerText = '🎯 锁定卡片';
+          if (hoveredCard !== hitGroup) {
+            if (hoveredCard) new TWEEN.Tween(hoveredCard.scale).to({x:1,y:1,z:1}, 200).start();
+            hoveredCard = hitGroup;
+            new TWEEN.Tween(hoveredCard.scale).to({x:1.15,y:1.15,z:1.15}, 200).start();
+          }
+          if (isPinch && lastGesture !== 'PINCH') { drawCard(hoveredCard); lastGesture = 'PINCH'; }
+        } else { resetHover(); }
+      } else { resetHover(); }
+    }
+  }
+
+  if (!isPinch && !isFist) lastGesture = '';
+}
+
+function resetHover() {
+  if (hoveredCard) { new TWEEN.Tween(hoveredCard.scale).to({x:1,y:1,z:1}, 200).start(); hoveredCard = null; }
+  if(!isDraggingCarousel) { cursor.className = ''; statusText.innerText = '☝️ 寻迹中...'; }
+}
+
+window.addEventListener('click', (e) => {
+  if (APP_STATE !== 'EXPLORE') return;
+  mouseVec.x = (e.clientX / window.innerWidth) * 2 - 1;
+  mouseVec.y = -(e.clientY / window.innerHeight) * 2 + 1;
+  raycaster.setFromCamera(mouseVec, camera);
+  const intersects = raycaster.intersectObjects(carouselGroup.children, true);
+  if (intersects.length > 0) {
+    const hitGroup = intersects[0].object.parent;
+    drawCard(hitGroup);
+  }
+});
+
+// 直接启动
+initThree();
+initHands();
+</script>
 </body>
 </html>

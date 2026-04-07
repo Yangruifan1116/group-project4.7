@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>登录 - 数字胡焕庸线</title>
-    <link rel="stylesheet" href="./css/quiz.css" />
+    <link rel="stylesheet" href="./assets/css/quiz.css" />
 </head>
 <body>
     <div class="login-container">
@@ -13,97 +13,97 @@
                 <h1>🌐 数字胡焕庸线</h1>
                 <p>沉浸式体验系统</p>
             </div>
-            
+
             <div id="messageBox"></div>
-            
+
             <!-- 登录表单 -->
             <form id="loginForm">
                 <div class="form-group">
                     <label for="username">用户名</label>
-                    <input 
-                        type="text" 
-                        id="username" 
+                    <input
+                        type="text"
+                        id="username"
                         placeholder="请输入用户名"
                         autocomplete="username"
-                        required 
+                        required
                     />
                 </div>
-                
+
                 <div class="form-group">
                     <label for="password">密码</label>
-                    <input 
-                        type="password" 
-                        id="password" 
+                    <input
+                        type="password"
+                        id="password"
                         placeholder="请输入密码"
                         autocomplete="current-password"
-                        required 
+                        required
                     />
                 </div>
-                
+
                 <button type="submit" class="btn-primary">登 录</button>
             </form>
-            
+
             <!-- 注册表单（默认隐藏） -->
             <form id="registerForm" style="display: none;">
                 <div class="form-group">
                     <label for="regUsername">用户名</label>
-                    <input 
-                        type="text" 
-                        id="regUsername" 
+                    <input
+                        type="text"
+                        id="regUsername"
                         placeholder="请输入用户名"
                         autocomplete="username"
-                        required 
+                        required
                     />
                 </div>
-                
+
                 <div class="form-group">
                     <label for="regPassword">密码</label>
-                    <input 
-                        type="password" 
-                        id="regPassword" 
+                    <input
+                        type="password"
+                        id="regPassword"
                         placeholder="请输入密码"
                         autocomplete="new-password"
                         minlength="6"
-                        required 
+                        required
                     />
                 </div>
-                
+
                 <div class="form-group">
                     <label for="confirmPassword">确认密码</label>
-                    <input 
-                        type="password" 
-                        id="confirmPassword" 
+                    <input
+                        type="password"
+                        id="confirmPassword"
                         placeholder="请再次输入密码"
                         autocomplete="new-password"
                         minlength="6"
-                        required 
+                        required
                     />
                 </div>
-                
+
                 <button type="submit" class="btn-primary">注 册</button>
             </form>
-            
+
             <div class="login-footer">
                 <span id="switchText">还没有账号？</span>
                 <span class="switch-mode" id="switchMode">立即注册</span>
             </div>
         </div>
     </div>
-    
-    <script src="./js/user-manager.js"></script>
+
+    <script src="./js/core/user-manager.js"></script>
     <script>
        const loginForm = document.getElementById('loginForm');
        const registerForm = document.getElementById('registerForm');
        const switchMode = document.getElementById('switchMode');
        const switchText = document.getElementById('switchText');
        const messageBox = document.getElementById('messageBox');
-        
+
         let isLoginMode = true;
-        
+
         // 切换登录/注册模式
         switchMode.addEventListener('click', () => {
             isLoginMode = !isLoginMode;
-            
+
             if (isLoginMode) {
                 loginForm.style.display = 'block';
                 registerForm.style.display = 'none';
@@ -115,19 +115,19 @@
                 switchText.textContent = '已有账号？';
                 switchMode.textContent = '返回登录';
             }
-            
+
             clearMessage();
         });
-        
+
         // 处理登录
         loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            
+
            const username = document.getElementById('username').value.trim();
            const password = document.getElementById('password').value;
-            
+
            const result = window.userManager.login(username, password);
-            
+
             if (result.success) {
                 showMessage('登录成功，正在跳转...', 'success');
                 setTimeout(() => {
@@ -137,23 +137,23 @@
                 showMessage(result.message, 'error');
             }
         });
-        
+
         // 处理注册
         registerForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            
+
            const username = document.getElementById('regUsername').value.trim();
            const password = document.getElementById('regPassword').value;
            const confirmPassword = document.getElementById('confirmPassword').value;
-            
+
             // 验证密码
             if (password !== confirmPassword) {
                 showMessage('两次输入的密码不一致', 'error');
                 return;
             }
-            
+
            const result = window.userManager.register(username, password);
-            
+
             if (result.success) {
                 showMessage('注册成功，即将跳转到登录页面...', 'success');
                 setTimeout(() => {
@@ -168,19 +168,19 @@
                 showMessage(result.message, 'error');
             }
         });
-        
+
         // 显示消息
         function showMessage(text, type) {
             messageBox.className = `message-box message-${type}`;
             messageBox.textContent = text;
         }
-        
+
         // 清除消息
         function clearMessage() {
             messageBox.className = 'message-box';
             messageBox.textContent = '';
         }
-        
+
         // 检查是否已登录
         window.addEventListener('DOMContentLoaded', () => {
             if (window.userManager.isLoggedIn()) {

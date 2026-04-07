@@ -1,12 +1,12 @@
 {
-  "short_name": "",
-  "name": "",
+  "short_name": "胡焕庸线",  // 给它起个短名字
+  "name": "数字胡焕庸线",    // 完整名字
   "icons": [{
-    "src": "icon.png",
+    "src": "assets/img/icon.png", // ✅ 修改路径：指向新的 assets 目录
     "type": "image/png",
     "sizes": "192x192"
   }],
   "start_url": "/?utm_source=homescreen",
-  "background_color": "#fafafa",
-  "theme_color": "#fafafa"
+  "background_color": "#000000", // 建议改成深色，符合你网站风格
+  "theme_color": "#000000"
 }
